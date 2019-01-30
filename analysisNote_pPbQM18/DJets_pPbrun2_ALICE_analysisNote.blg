@@ -1,0 +1,49 @@
+This is BibTeX, Version 0.99d (TeX Live 2015/Debian)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: DJets_pPbrun2_ALICE_analysisNote.aux
+The style file: iopart-num.bst
+Database file #1: biblio.bib
+Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
+Warning--empty journal in ALICE:2016a
+You've used 13 entries,
+            3033 wiz_defined-function locations,
+            720 strings with 6346 characters,
+and the built_in function-call counts, 9605 in all, are:
+= -- 986
+> -- 132
+< -- 0
++ -- 87
+- -- 53
+* -- 649
+:= -- 1190
+add.period$ -- 0
+call.type$ -- 13
+change.case$ -- 0
+chr.to.int$ -- 0
+cite$ -- 14
+duplicate$ -- 877
+empty$ -- 943
+format.name$ -- 44
+if$ -- 2118
+int.to.chr$ -- 0
+int.to.str$ -- 13
+missing$ -- 133
+newline$ -- 49
+num.names$ -- 13
+pop$ -- 248
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 0
+skip$ -- 121
+stack$ -- 0
+substring$ -- 1288
+swap$ -- 329
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 0
+warning$ -- 1
+while$ -- 164
+width$ -- 15
+write$ -- 124
+(There was 1 warning)

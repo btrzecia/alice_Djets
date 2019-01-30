@@ -1,0 +1,71 @@
+\documentclass[ALICE,manyauthors]{ALICE_analysis_notes}
+%
+\input{commands.tex}
+\usepackage{rotating}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{multirow}
+%\usepackage{subcaption}
+\usepackage[ampersand]{easylist}
+\usepackage{hyperref}
+\usepackage{comment}
+\usepackage{bm}
+\usepackage{subcaption}
+\usepackage[section]{placeins}
+\usepackage{color}
+%
+\begin{document}%
+%%%%%%%%%%%%% ptdr definitions %%%%%%%%%%%%%%%%%%%%%
+%
+%%%%%%%%%%%%%%%  Title page %%%%%%%%%%%%%%%%%%%%%%%%
+%
+\begin{titlepage}
+%
+\PHnumber{ALICE-ANA-2018-xxx} 
+\PHdate{\today}
+%
+%%% Put your own title + short title here:
+\title{D mesons in jets in \pPb\ collisions: preliminary figures for QM 2018}
+\ShortTitle{D-jets in \pPb\ collisions: preliminary figures for QM 2018}   % appears on right page headers
+%%% BASED ON THE QM2017 ANALYSIS NOTE ..... %%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+\author{Salvatore Aiola$^{1}$, Fabio F. Colamaria$^{2}$, Andrea Rossi$^{3}$, Antonio C. O. da Silva$^{4,5}$, Barbara A. Trzeciak$^{4}$\\
+$D^{0}$-jets: Auro Mohanty$^{4}$, Barbara A. Trzeciak$^{4}$}
+\author{
+1. Yale University, USA\\
+2. University of Bari and INFN, Italy\\
+3. University of Padova and INFN, Italy\\
+4. Utrecht University, Netherlands\\
+5. University of S\~ao Paulo, Brazil\\
+}
+\author{Email: barbara.antonina.trzeciak@cern.ch}
+%
+\ShortAuthor{ALICE Analysis Note 2018}      % appears on left page headers, do not change
+%
+\begin{abstract}
+The study of the charm content of jets is interesting because up to now
+it has eluded a precise quantitative understanding in the framework of perturbative QCD (pQCD).
+The charm content of jets is known to arise both from prompt production in the process ${\rm gg\, (q\bar{q})} \rightarrow {\rm c\bar{c}}$, and
+from the parton shower of gluons and light-flavor quarks.
+Charm hadrons coming from the fragmentation of prompt charm jets 
+are expected to carry a larger fraction of the total jet momentum,
+as compared to those where the charm content arises later in the
+parton shower. Therefore the measurement of charm jet fragmentation functions (FFs) 
+can be used to estimate the relative strength of the two mechanisms.
+Heavy-flavor jets can also provide important insights into the Quark-Gluon Plasma (QGP)
+produced in ultra-relativistic heavy-ion collisions, as heavy quarks are predicted
+to interact with the QGP differently compared to light quarks and gluons. 
+The aim of the analysis is to extract both the $p_{\rm T}$ spectrum of the D-tagged jets in p-Pb collisions at \snn\ = 5.02 TeV. 
+We identify D-meson candidates via their hadronic decay channels using topological selections and particle identification. These 
+candidates are combined with the other charged tracks reconstructed by the central tracking system, using the anti-$k_T$ jet-finding algorithm. 
+We extract the yield of D-tagged jets through their invariant mass analysis in bins of D $p_T$ and get their jet $p_T$ spectra.  \\
+Aim of this note is to present details of the \Dzero-tagged jet analysis to be approved as a preliminary result for the Quark Matter 2018 conference, and it updates the previous preliminary result on the \Dstar-tagged jets \pt\ differential cross-section in \pPb at \snn = 5.02 TeV.
+\end{abstract}
+\end{titlepage}
+%
+\tableofcontents
+\newpage
+\input{content.tex}               %%%%%%%%%%% put the body of the article here
+
+\end{document}
