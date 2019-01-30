@@ -22,11 +22,11 @@ Dmeson=$4           # 0: D0, 1: D*
 isSignal=1          # if to extract signal from the inv. mass
 isEffPrompt=1       # if to extract prompt D-jet efficiency
 isEffNonPrompt=1    # if to extract non-prompt D-jet efficiency
-isDetRMPrompt=1     # if to extract prompt D-jet response matrix
-isDetRMNonPrompt=1  # if to extract non-prompt D-jet response matrix
-isUnfolding=1       # if to perform unfolding
-isFDSub=1           # if to subtract feed-down
-isFinalSpectra=1    # if to extract the final x-section
+isDetRMPrompt=0     # if to extract prompt D-jet response matrix
+isDetRMNonPrompt=0  # if to extract non-prompt D-jet response matrix
+isUnfolding=0       # if to perform unfolding
+isFDSub=0           # if to subtract feed-down
+isFinalSpectra=0    # if to extract the final x-section
 
 isCsim=0            # switch this flag on if you haven't prepared output of the simulations yet, it takes time -- if the simulation output directory is empty the simulations will be run anyway
 isBsim=0            # switch this flag on if you haven't prepared output of the simulations yet with a current efficiencies, it takes time -- if the simulation output directory is empty the simulations will be run anyway

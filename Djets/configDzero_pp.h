@@ -38,7 +38,7 @@ enum DMesonSpecies {kD0toKpi=0, kDStarD0pi};
     TString       fDmesonS = "D^{0}";
     const double  fRpar = 0.3;           //-----! jet R parameter for your studies (the one that you use in your jet finder!)
     const int     Rpar = 3;
-    const int     ND = 4;                //-----!  change these numbers based on how many D mesons you analyse in data !
+    const int     ND = 3;                //-----!  change these numbers based on how many D mesons you analyse in data !
     const int     NDMC = 2;              //-----!  change these numbers based on how many D mesons you analyse in MC !
 
     //const double  sigma_in = 0.0512;       //-----! inelastic x-section in bars
