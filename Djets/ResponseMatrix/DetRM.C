@@ -42,7 +42,6 @@ bool postfix = 0, TString listName = "FD", bool isprefix=0 )
 
 	  TList *histList[NDMC];
 	  THnSparseF *sparseMC[NDMC];
-	  THnSparseF *sparsereco[NDMC];
 
     TH2F *hPtJet2d;
     TH1F *hPtJetGen;
@@ -67,15 +66,6 @@ bool postfix = 0, TString listName = "FD", bool isprefix=0 )
            }
 
 
-
-
-//	  for(int i=0; i<NDMC; i++){
-//        if(postfix) { histList[i] =  (TList*)dir->Get(Form("%s%d%sMCrec",histName.Data(),i,listName.Data())); }
-//        else {
-//    			 if(isPrompt) histList[i] =  (TList*)dir->Get(Form("%s%dMCrec",histName.Data(),i));
-//    			 else histList[i] =  (TList*)dir->Get(Form("%s%dFDMCrec",histName.Data(),i));
-//    		}
-
         sparseMC[i] = (THnSparseF*)histList[i]->FindObject("ResponseMatrix");
 
         sparseMC[i]->GetAxis(2)->SetRangeUser(Dptmin,Dptmax);
@@ -86,6 +76,11 @@ bool postfix = 0, TString listName = "FD", bool isprefix=0 )
 
         if(fDmesonSpecie) sparseMC[i]->GetAxis(5)->SetRangeUser(jetmin,jetmax); // Dstar tmp
         else sparseMC[i]->GetAxis(6)->SetRangeUser(jetmin,jetmax);
+
+	if(!fDmesonSpecie) {
+		sparseMC[i]->GetAxis(4)->SetRangeUser(-(0.9-fRpar),0.9-fRpar);
+		sparseMC[i]->GetAxis(9)->SetRangeUser(-(0.9-fRpar),0.9-fRpar);
+	}
 
         if(fDmesonSpecie) hPtJet[i] = (TH2F*)sparseMC[i]->Projection(5,1,"E"); //Dstar tmp
         else hPtJet[i] = (TH2F*)sparseMC[i]->Projection(6,1,"E");
