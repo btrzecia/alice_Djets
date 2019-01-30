@@ -54,17 +54,16 @@ float jetptmin = 2, float jetptmax = 50, bool recoPt = 0, bool postfix = 0, TStr
 			else { cout<<"-----postfix has to be true if prefix is true!! check again----------------"<<endl; return;	}
 	   	}
 
-		//sparseMC[i] = (THnSparseF*)histList[i]->FindObject("ResponseMatrix");
 		THnSparseF* sMC = (THnSparseF*)histList[i]->FindObject("ResponseMatrix");
 		sparseMC[i] = (THnSparseF*)sMC->Clone(Form("sparseMC_%d",i));
 		if(fDmesonSpecie) sparseMC[i]->GetAxis(5)->SetRangeUser(jetptmin,jetptmax); // Dstar tmp
-    		else sparseMC[i]->GetAxis(6)->SetRangeUser(jetptmin,jetptmax); // jet pT gen
+    		else { 	sparseMC[i]->GetAxis(6)->SetRangeUser(jetptmin,jetptmax); // jet pT gen
+			sparseMC[i]->GetAxis(9)->SetRangeUser(-(0.9-fRpar),0.9-fRpar); // MC jet eta
+		}
     		if(fDmesonSpecie) hMC[i] = (TH1F*)sparseMC[i]->Projection(6); // Dstar tmp
     		else hMC[i] = (TH1F*)sparseMC[i]->Projection(7); // Dpt gen
-    		hMC[i]->SetName(Form("hMC_%d",i));
-		sparseMC[i]->GetAxis(9)->SetRangeUser(-0.6,0.6); // MC jet eta
+		hMC[i]->SetName(Form("hMC_%d",i));
 
-		//sparsereco[i] = (THnSparseF*)histList[i]->FindObject("ResponseMatrix");
 		THnSparseF* sreco = (THnSparseF*)histList[i]->FindObject("ResponseMatrix");
                 sparsereco[i] = (THnSparseF*)sreco->Clone(Form("sparsereco_%d",i));
    	 	if(recoPt) {
@@ -75,8 +74,7 @@ float jetptmin = 2, float jetptmax = 50, bool recoPt = 0, bool postfix = 0, TStr
       			else sparsereco[i]->GetAxis(6)->SetRangeUser(jetptmin,jetptmax); // jet pT gen
   			sparsereco[i]->GetAxis(1)->SetRangeUser(0,100); // jet pT reco
     		}
-   		sparsereco[i]->GetAxis(4)->SetRangeUser(-0.6,0.6); // reco jet eta
-   		//sparsereco[i]->GetAxis(9)->SetRangeUser(-0.6,0.6); // MC jet eta (old way)
+   		if(!fDmesonSpecie) sparsereco[i]->GetAxis(4)->SetRangeUser(-(0.9-fRpar),0.9-fRpar); // reco jet eta
 
     		if(fDmesonSpecie)hreco[i] = (TH1F*)sparsereco[i]->Projection(6); // Dstar tmp
     		else hreco[i] = (TH1F*)sparsereco[i]->Projection(7); // Dpt gen
@@ -122,7 +120,7 @@ float jetptmin = 2, float jetptmax = 50, bool recoPt = 0, bool postfix = 0, TStr
 	TH1D * hEff_reb = (TH1D*)hpt_reco_reb->Clone("hEff_reb");
 	hEff_reb -> Divide(hpt_reco_reb,hpt_mc_reb,1,1,"b");
 	//hEff_reb->GetXaxis()->SetRangeUser(ptmin,ptmax);
-	hEff_reb->SetTitle(Form("|#eta_{jet}|<0.%d",9-Rpar));
+	hEff_reb->SetTitle(Form("|#eta_{jet}|<%.1f",0.9-fRpar));
 	hEff_reb->GetXaxis()->SetTitle(Form("p_{T,%s} (GeV/$it{c})",fDmesonS.Data()));
 	hEff_reb->GetYaxis()->SetTitle("Acc #times Eff");
 
