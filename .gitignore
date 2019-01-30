@@ -9,6 +9,11 @@
 *.log
 *.aux
 *.pyc
+*.blg
+*.bak
+*.gz
+*.blg
+*.out
 Djets/run_*.csh
 Djets/run.csh
 Djets/configDzero*.h
