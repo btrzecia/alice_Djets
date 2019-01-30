@@ -14,7 +14,3 @@
 *.gz
 *.blg
 *.out
-Djets/run_*.csh
-Djets/run.csh
-Djets/configDzero*.h
-Djets/configDstar*.h
