@@ -1,30 +1,17 @@
-Steps
------
-1. "time ./run_main_pp.csh" [real	3m0.761s user	2m57.921s sys	0m2.696s]
-	1. 	249 [real 3m0.761s 	user 2m57.921s 	sys 0m2.696s]
-	2. 	349 [real 0m9.874s 	user 0m8.975s 	sys 0m0.860s]
-	3. 	348 [real 0m10.301s 	user 0m9.396s 	sys 0m0.871s]
-	4. 	347 [real 0m10.427s 	user 0m9.382s 	sys 0m1.010s]
-	5. 	358 [real 0m10.277s 	user 0m9.384s 	sys 0m0.861s]
-	6. 	359 [real 0m10.099s 	user 0m9.288s 	sys 0m0.778s]
-	7. 	357 [real 0m16.734s 	user 0m15.279s 	sys 0m1.411s]
-	8. 	257 [real 0m14.643s 	user 0m13.357s 	sys 0m1.251s]
-	9. 	258 [real 0m17.525s 	user 0m16.000s 	sys 0m1.421s]
-	9. 	247 [real 0m17.249s 	user 0m15.763s 	sys 0m1.448s]
-	10.	248 [real 0m17.812s 	user 0m16.337s 	sys 0m1.461s]
-	11.	259 [real 0m17.756s 	user 0m16.173s 	sys 0m1.554s]
-2. Now, "root -l systematics/BkgSRangesComparison2.C"
-3. "time ./run_main_pp.csh" with "bool isRefSys=0; double refScale = 0.5;" and "bool isRefSys=0; double refScale = 1.5;"
-4. "root -l systematics/rawYield_reflections2.C"
-5. Now, "doFDSys=1" in "run_main_pp.csh"
-6. "root -l systematics/sys_Bfeeddown.C"
-7. Now, "doFDSys=0"  in "run_main_pp.csh", and 
-	for different ranges:
-	1. "unfType=0; regPar=3"
-	2. "unfType=0; regPar=4"
-	3. "unfType=0; regPar=5"
-	4. "unfType=1; regPar=5"
-	5. "unfType=1; regPar=6"
-	6. "unfType=1; regPar=7"
-8. "root -l systematics/.C"
-9. Now, 
+
+- Prepare root files with an output of your analysis: data + MC for efficiencies and response matrix 
+- If a separete bkg.fluctuation matrix is needed, prepare it first
+- Prepare configs:
+
+	-  config *.h file, examples are: Dzero.h or Dstar.h 
+		- adjust variables to your needs: set up the system, D meson specie, D bins that you want to use, used R parameter, signal and SB ranges, if you want reflections (for D0), sigma in, etc ...
+		- IMPORTANT -- set up also names (and description) of your non-prompt (needed for the B feed-down subtraction) and prompt (needed only at the last step when comparing the measured x-section to a model, otherwise can be skipped) D-jet simulation files (path to the files needs to be given in diffrerent place)
+		- in case of running with reflections for D0, you must already have the reflection files prepared
+
+
+- running scripts: here you need to define your configuration
+	- run.sh: the main script running the whole analysis -- steps to be run -  settings are passed via a script that runs this one, usually this script doesn't have to be modified, unless you want to skip one of the analysis steps
+		-- !! you may want to change the jet pT ranges for the efficiency evaluation: jetpteffmin, jetpteffmax; and how the denominator is define.
+	- run_analysis.csh: this script runs run.sh, define here paths to data and MC output files, file names, the *.h configuration file name, if reflections are used, if external bkg. fluctuation matrix is used ...
+		-- !!!! setup number of POWHEG sim files !
+	- run_main.csh: this script runs run_analysis.sh, define here unfolding algorith, reg. parameter for the unfolding, prior, prior type and bkg. fluctuation matrix type (this you need to set once you use an extrenal bkg. fluctuation matrix, then based on this type name of a root file with the corresponding bkg. fluctuation matrix will be set in the run_analysis.csh script - you should set path to your file). Set up also flags and RELEVANT SCRIPTS if you want to run analysis for systematic unc. evaluation.
