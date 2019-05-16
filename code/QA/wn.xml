@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<alien>
+  <collection name="collection">
+    <event name="1">
+      <file name="AliAOD.root" aclId="" broken="0" ctime="2019-03-22 14:06:23" dir="191099769" entryId="191100281" expiretime="" gowner="z2" guid="3B160A60-4CA3-11E9-A1ED-F7203931D128" guidtime="11E94CA3" jobid="1434758084" lfn="/alice/sim/2019/LHC19c5a/1/296623/AOD/001/AliAOD.root" md5="cece7926d411c15ae20c8f7f6c1b3e91" owner="aliprod" perm="755" replicated="0" size="68008335" turl="alien:///alice/sim/2019/LHC19c5a/1/296623/AOD/001/AliAOD.root" type="f" />
+    </event>
+    <event name="2">
+      <file name="AliAOD.root" aclId="" broken="0" ctime="2019-03-22 14:06:03" dir="191099533" entryId="191099870" expiretime="" gowner="z2" guid="2A0A6F5E-4CA3-11E9-ADA8-47C092FF0E9D" guidtime="11E94CA3" jobid="1434758085" lfn="/alice/sim/2019/LHC19c5a/1/296623/AOD/002/AliAOD.root" md5="cd3a44b78bd3b90b8834980009058035" owner="aliprod" perm="755" replicated="0" size="123627176" turl="alien:///alice/sim/2019/LHC19c5a/1/296623/AOD/002/AliAOD.root" type="f" />
+    </event>
+    <event name="3">
+      <file name="AliAOD.root" aclId="" broken="0" ctime="2019-03-22 14:36:18" dir="191114217" entryId="191118824" expiretime="" gowner="z2" guid="04556AD0-4CA7-11E9-AE2F-FB5E8D3D0F74" guidtime="11E94CA7" jobid="1434758087" lfn="/alice/sim/2019/LHC19c5a/1/296623/AOD/003/AliAOD.root" md5="ba485e7ca858458a7fb2bfcc0859ccf1" owner="aliprod" perm="755" replicated="0" size="781622299" turl="alien:///alice/sim/2019/LHC19c5a/1/296623/AOD/003/AliAOD.root" type="f" />
+    </event>
+    <event name="4">
+      <file name="AliAOD.root" aclId="" broken="0" ctime="2019-03-22 15:08:44" dir="191131355" entryId="191137564" expiretime="" gowner="z2" guid="A3F7866A-4CAA-11E9-B102-474E68526F74" guidtime="11E94CAA" jobid="1434758089" lfn="/alice/sim/2019/LHC19c5a/1/296623/AOD/004/AliAOD.root" md5="26a18acc39224ad670c08e979c4d0ab0" owner="aliprod" perm="755" replicated="0" size="746092250" turl="alien:///alice/sim/2019/LHC19c5a/1/296623/AOD/004/AliAOD.root" type="f" />
+    </event>
+    <info command="[/alice/cern.ch/user/b/btrzecia/]: find -z -x collection -l 4 -o 0 /alice/sim/2019/LHC19c5a/1//296623 AOD/*AliAOD.root" creator="admin" date="Mon Apr 29 13:37:15 CEST 2019" timestamp="1556537835" />
+  </collection>
+</alien>
+
+
+
+

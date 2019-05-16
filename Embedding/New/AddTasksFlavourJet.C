@@ -13,22 +13,12 @@ void AddTasksFlavourJet(const Int_t iCandType = 1 /*0 = D0, 1=Dstar...*/,
    Bool_t doBkg = kTRUE
    )
 {
-   const TString sInputTrkMC  = "MCParticlesSelected";
-   const TString sInputTrkRec  = "tracks";
-   const TString sUsedTrks  = "PicoTracks";
-    //PicoTracks
-   const TString sUsedClus  = "CaloClustersCorr";
+
+
    TString rhoName = "";
    TString rhoNameBkg = "";
    TString rhoNameMC = "";
-   TString sInputTrk = bIsReco ? sInputTrkRec : sInputTrkMC;
-   const Int_t iJetAlgo = 1;
-   const Int_t iJetType = 1; /*0=Full, 1=Charged, 2=Neutral*/
-   /*
-   const Int_t    nRadius = 3;
-   const Double_t aRadius[] = {  0.2,   0.4,   0.6  };
-   const TString  sRadius[] = { "R02", "R04", "R06" };
-   */
+
    const Int_t    nRadius = 1;
    const Double_t aRadius[] = {  0.3  };
    const TString  sRadius[] = { "R03" };
@@ -54,13 +44,8 @@ void AddTasksFlavourJet(const Int_t iCandType = 1 /*0 = D0, 1=Dstar...*/,
       return;
    }
    //=============================================================================
-   
-    AliAnalysisTaskEmcal::TriggerType trType=AliAnalysisTaskEmcal::kND;
+
     
-   UInt_t uAnaType = (((iJetType==0) ||     (iJetType==2)) ? 1 : 0);
-   Int_t  iLeading =  ((iJetType==0) ? 3 : ((iJetType==1)  ? 0 : 1));
-   Int_t leadHadType=0; /* 0=charged, 1=neutral, 2=both*/
-   
    //Centrality Selection (only for heavy-ions)
   // gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C");
   // AliMultSelectionTask * task = AddTaskMultSelection(kFALSE);
@@ -81,10 +66,14 @@ void AddTasksFlavourJet(const Int_t iCandType = 1 /*0 = D0, 1=Dstar...*/,
         }
     }
     
+    gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
+	AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(kTRUE, kTRUE);
+   
+   
     //D meson filtering task
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/FlavourJetTasks/macros/AddTaskSEDmesonsFilterCJ.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/jetsHF/macros/AddTaskDmesonsFilterCJ.C");
     //D-jet correlation task
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/FlavourJetTasks/macros/AddTaskDFilterAndCorrelations.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/jetsHF/macros/AddTaskDFilterCorrelations.C");
     //Jet task
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
     //Rho task
@@ -93,40 +82,45 @@ void AddTasksFlavourJet(const Int_t iCandType = 1 /*0 = D0, 1=Dstar...*/,
     gROOT->LoadMacro("AddEmbeddingEventForHF.C");
     
     //This line sets the right filter depending on the period
-    AliTrackContainer::SetDefTrackCutsPeriod("lhc15o");
+    //AliTrackContainer::SetDefTrackCutsPeriod("lhc15o");
     
     // Setting embedding task
-    AliEmbeddingEventForHFTask* embed = AddEmbeddingEventForHF("","aodTree","tracks","alien:///alice/data/2015/LHC15o","pass1/AOD","AliAOD.root",500,kFALSE,0,20,AliVEvent::kAnyINT,"Embedding",sCutFile,iCandType);
+    AliEmbeddingEventForHFTask* embed = AddEmbeddingEventForHF("","aodTree","tracks","alien:///alice/data/2015/LHC15o","pass1/AOD194","AliAOD.root",500,kFALSE,0,20,AliVEvent::kAnyINT,"Embedding",sCutFile,iCandType);
     
     // Add track efficiency to the base sample (Pythia pp events in this case)
     embed->SetBaseTrackEff(kTRUE);
-    embed->SetBaseTrackEffPath("alien:///alice/cern.ch/user/a/anolivei/TrackingEff/EffRatioFile_fine.root");
+    embed->SetBaseTrackEffPath("alien:///alice/cern.ch/user/b/btrzecia/PbPb2015/TrackingEff/EffRatioFile_fine.root");
+    //embed->SetBaseTrackEffPath("alien:///alice/cern.ch/user/a/anolivei/TrackingEff/EffRatioFile_fine.root");
     embed->SetBaseTrackEffHistName("EffRatio");
     
     AliTrackContainer* trackCont0 = embed->AddTrackContainer("tracks");
     trackCont0->SetClassName("AliAODTrack");
-    trackCont0->SetTrackCutsPeriod("lhc15o");
+    //trackCont0->SetTrackCutsPeriod("lhc15o");
     trackCont0->SetTrackFilterType(AliEmcalTrackSelection::kCustomTrackFilter);
     trackCont0->SetAODFilterBits(1<<4);
     trackCont0->AddAODFilterBit(1<<9);
     
-    for(Int_t i=0; i<5; i++)
+    
+    for(Int_t i=0; i<1; i++)
     {
         
         TString TaskText = sText;
         TaskText += Form("N%d",i);
         
         //Filtering task. It will create a set of particles with the D meson instead of the daughters
-        AliAnalysisTaskSEDmesonsFilterCJ *filter = AddTaskSEDmesonsFilterCJ(iCandType,sCutFile,bIsMC,bIsReco,TaskText);
-        filter->SetBuildRMEff(kTRUE);
-        filter->SetCombineDmesons(kTRUE);
-        filter->SetMultipleCandidates(kTRUE); //Analyse one candidate per event
-        filter->SetAnalysedCandidate(i); //Number of the candidate that will be analysed (0 = first candidate)
+        AliAnalysisTaskDmesonsFilterCJ *filter = AddTaskDmesonsFilterCJ(iCandType,sCutFile,bIsMC,bIsReco,TaskText);
+        filter->SetAnalysedCandidate(i); 
+		filter->SetCombineDmesons(kTRUE);
+		filter->SetMultipleCandidates(kTRUE); 
+		filter->SetRejectDfromB(kTRUE);
+		filter->SetKeepOnlyDfromB(kFALSE);
+		filter->SetBuildRMEff(kTRUE);
+		filter->SetUsePythia(kFALSE);
         
         // Giving embedded tracks to the filtering task in order to include D meson and remove daughters
         AliTrackContainer* trackCont1 = filter->AddTrackContainer("EmbeddedTracks");
         trackCont1->SetClassName("AliAODTrack");
-        trackCont1->SetTrackCutsPeriod("lhc15o");
+        //trackCont1->SetTrackCutsPeriod("lhc15o");
         trackCont1->SetTrackFilterType(AliEmcalTrackSelection::kCustomTrackFilter);
         trackCont1->SetAODFilterBits(1<<4);
         trackCont1->AddAODFilterBit(1<<9);
@@ -190,11 +184,13 @@ void AddTasksFlavourJet(const Int_t iCandType = 1 /*0 = D0, 1=Dstar...*/,
         rhoName += TaskText;
         AliEmcalJetTask *taskFJ2 = AddTaskEmcalJet(DcandAndTracks,"",0,0.3,0,0.15,0.30,0.005,1,KTJet,0.,kFALSE,kFALSE);
         taskFJ2->SelectCollisionCandidates(uTriggerMask);
+        
         rhotask = (AliAnalysisTaskRho*) AddTaskRho(taskFJ2->GetName(), DcandAndTracks,"", rhoName, 0.3, "TPCFID", 0.01, 0, 0, 2, kTRUE);
+        rhotask->SelectCollisionCandidates(uTriggerMask);
         rhotask->SetHistoBins(100,0,250);
         
         
-        AliAnalysisTaskFlavourJetCorrelations *CorrTask = AddTaskDFilterAndCorrelations(
+        AliAnalysisTaskDJetCorrelations *CorrTask = AddTaskDFilterCorrelations(
                                                                                          iCandType,
                                                                                          sCutFile,
                                                                                          bIsMC,
@@ -212,22 +208,30 @@ void AddTasksFlavourJet(const Int_t iCandType = 1 /*0 = D0, 1=Dstar...*/,
                                                                                          dJetPtCut,
                                                                                          acctype,
                                                                                          dJetAreaCut,
-                                                                                         AliAnalysisTaskFlavourJetCorrelations::kConstituent
+                                                                                         AliAnalysisTaskDJetCorrelations::kConstituent
+
                                                                                          );
-        CorrTask->SetBuildResponseMatrixEff(kTRUE);
-        CorrTask->SetMC(kTRUE);
+                                                                                         
+        
+        CorrTask->SetJetPtFactor(4);
+
+        CorrTask->SetBuildResponseMatrix(kFALSE);
+		CorrTask->SetBuildResponseMatrixEff(kTRUE);
+		CorrTask->SetUsePythia(kFALSE);
+		AliMCParticleContainer *MCpartCont  = CorrTask->AddMCParticleContainer(MCDcandAndTracks);
+		AliJetContainer *jetContMC = CorrTask->AddJetContainer(taskFJMCDandTracks->GetName(),"TPC",0.3);
+		jetContMC->ConnectParticleContainer(MCpartCont);
+		jetContMC->SetJetPtCut(0);
+		jetContMC->SetPercAreaCut(dJetAreaCut);                                                                                 
+        
+        //CorrTask->SetMC(kTRUE);
         // Extra histrograms for cross-section
-        CorrTask->SetVzRange(-10,10);
-        CorrTask->SetIsPythia(kTRUE);
-        CorrTask->SetMakeGeneralHistograms(kTRUE);
+        //CorrTask->SetVzRange(-10,10);
+        //CorrTask->SetIsPythia(kTRUE);
+        //CorrTask->SetMakeGeneralHistograms(kTRUE);
         // Generator level tracks and jets
-        AliMCParticleContainer *MCpartCont  = CorrTask->AddMCParticleContainer(MCDcandAndTracks);
-        AliJetContainer *jetContBkg = CorrTask->AddJetContainer(taskFJMCDandTracks->GetName(),"TPC",0.3);
-        if(jetContBkg) {
-            jetContBkg->ConnectParticleContainer(MCpartCont);
-            jetContBkg->SetJetPtCut(0.0);
-            jetContBkg->SetPercAreaCut(dJetAreaCut);
-        }
+        
+        
     }
    
    return;

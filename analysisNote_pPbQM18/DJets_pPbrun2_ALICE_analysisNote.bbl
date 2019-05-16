@@ -1,0 +1,59 @@
+\providecommand{\newblock}{}
+\begin{thebibliography}{10}
+\expandafter\ifx\csname url\endcsname\relax
+  \def\url#1{{\tt #1}}\fi
+\expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+\providecommand{\eprint}[2][]{\url{#2}}
+% Bibliography created with iopart-num v2.1
+% /biblio/bibtex/contrib/iopart-num
+
+\bibitem{PDG:2016}
+Patrignani C {\em et~al.\/} (Particle Data Group) 2016 {\em Chin. Phys.\/} C
+  {\bf 40} 100001
+
+\bibitem{Cacciari:2012}
+Cacciari M, Salam G~P and Soyez G 2012 {\em Eur.Phys.J.\/} {\bf C72} 1896
+  (\textit{Preprint} \eprint{1111.6097})
+
+\bibitem{Cacciari:2008c}
+Cacciari M, Salam G and Soyez G 2008 {\em JHEP\/} {\bf 04} 063
+
+\bibitem{Cacciari:2006}
+Cacciari M and Salam G 2006 {\em Physics Letters B\/} {\bf 641} 57--61
+
+\bibitem{ALICE:2014a}
+Abelev B {\em et~al.\/} (ALICE) 2014 {\em JHEP\/} {\bf 1403} 013
+  (\textit{Preprint} \eprint{1311.0633})
+
+\bibitem{ALICE:2015a}
+Adam J {\em et~al.\/} (ALICE) 2015 {\em Phys. Lett.\/} B {\bf 746} 1 -- 14 ISSN
+  0370-2693 (\textit{Preprint} \eprint{1502.01689})
+
+\bibitem{Cacciari:1998}
+Cacciari M, Greco M and Nason P 1998 {\em JHEP\/} {\bf 9805} 007
+  (\textit{Preprint} \eprint{9803400})
+
+\bibitem{ALICE:2012d}
+Abelev B {\em et~al.\/} (ALICE) 2012 {\em JHEP\/} {\bf 2012} 1--30 ISSN
+  1029-8479 (\textit{Preprint} \eprint{1111.1553})
+
+\bibitem{ALICE:2014d}
+Abelev B {\em et~al.\/} (ALICE) 2014 {\em Phys. Rev. Lett.\/} {\bf 113}(23)
+  232301 (\textit{Preprint} \eprint{1405.3452})
+
+\bibitem{ALICE:2016a}
+Adam J {\em et~al.\/} (ALICE) 2016  (\textit{Preprint} \eprint{1605.07569})
+
+\bibitem{Alioli:2010}
+Alioli S, Nason P, Oleari C and Re E 2010 {\em Journal of High Energy
+  Physics\/} {\bf 2010} 1--58 ISSN 1029-8479
+
+\bibitem{Cacciari:2012b}
+Cacciari M {\em et~al.\/} 2012 {\em JHEP\/} {\bf 2012} 1--24 ISSN 1029-8479
+  (\textit{Preprint} \eprint{1205.6344})
+
+\bibitem{Hocker:1995}
+Hocker A and Kartvelishvili V 1996 {\em NIM\/} {\bf A372} 469--481
+  (\textit{Preprint} \eprint{hep-ph/9509307})
+
+\end{thebibliography}

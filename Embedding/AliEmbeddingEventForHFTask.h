@@ -187,7 +187,7 @@ class AliEmbeddingEventForHFTask : public AliAnalysisTaskEmcal
   AliEmbeddingEventForHFTask(const AliEmbeddingEventForHFTask &source);
   AliEmbeddingEventForHFTask& operator=(const AliEmbeddingEventForHFTask& source); 
 
-  ClassDef(AliEmbeddingEventForHFTask, 6);
+  ClassDef(AliEmbeddingEventForHFTask, 1);
 };
 
 #endif

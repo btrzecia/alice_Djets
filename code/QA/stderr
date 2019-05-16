@@ -1,0 +1,6 @@
+/usr/share/modules/init/bash: line 58: export: _moduleraw: not a function
+190429 13:42:47 20868 Xrd: XrdClientMessage::ReadRaw: Failed to read header (8 bytes).
+190429 13:42:47 20865 Xrd: XrdClientMessage::ReadRaw: Failed to read header (8 bytes).
+190429 13:42:47 20885 Xrd: XrdClientMessage::ReadRaw: Failed to read header (8 bytes).
+190429 13:43:17 20892 Xrd: XrdClientMessage::ReadRaw: Failed to read header (8 bytes).
+190429 13:43:47 20902 Xrd: XrdClientMessage::ReadRaw: Failed to read header (8 bytes).

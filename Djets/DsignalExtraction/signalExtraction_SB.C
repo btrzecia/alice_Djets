@@ -1,3 +1,5 @@
+
+
 /**************************************************************************
  * Copyright(c) 1998-2017, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -25,22 +27,22 @@
 
 #include "signalExtraction.h"
 
-bool isRefSys=0;
-double refScale = 1.5;
+static Bool_t isRefSys=0;
+static Double_t refScale = 1.5;
 
 void signalExtraction_SB(
   TString data = "$HOME/Work/alice/analysis/out/AnalysisResults.root",
-  bool isEff = 0, 
+  Bool_t isEff = 0,
   TString efffile = "../efficiency/DjetEff_prompt.root",
-  bool isRef = 0, 
+  Bool_t isRef = 0,
   TString refFile = "test.root",
-  bool postfix = 0, 
+  Bool_t postfix = 0,
   TString listName = "Cut",
   TString out = "signalExtraction",
-  bool save = 1,
-  bool isMoreFiles = 0,
+  Bool_t save = 1,
+  Bool_t isMoreFiles = 0,
   TString prod = "kl",   // for more than 1 file, for one file leave it empty)
-  bool isprefix=0
+  Bool_t isprefix=0
 )
 {
 
@@ -56,17 +58,17 @@ void signalExtraction_SB(
     gSystem->Exec(Form("mkdir %s%s",outdir.Data(),plotsDir.Data()));
 
     if(!isMoreFiles) prod="";
-    int nFiles = (int)prod.Length();
+    Int_t nFiles = static_cast<Int_t>(prod.Length());
 
     TString histName;
-		if(!isprefix){
-		    if(fDmesonSpecie) histName = "histosDStarMBN";
-		    else histName = "histosD0MBN";
-		}
-		else{
-		    if(fDmesonSpecie) histName = "histosDStarMBN";
-		    else histName = "histosD0";
-		}
+        if(!isprefix){
+            if(fDmesonSpecie) histName = "histosDStarMBN";
+            else histName = "histosD0MBN";
+        }
+        else{
+            if(fDmesonSpecie) histName = "histosDStarMBN";
+            else histName = "histosD0";
+        }
     // get analysis output file
     TString datafile;
     TFile *File;
@@ -77,8 +79,8 @@ void signalExtraction_SB(
     if(!isMoreFiles) {
       datafile = data;
       File = new TFile(datafile,"read");
-      if(!File) { cout << "==== WRONG FILE WITH DATA =====\n\n"; return ;}
-      dir=(TDirectoryFile*)File->Get("DmesonsForJetCorrelations");
+      if(!File) { std::cout << "==== WRONG FILE WITH DATA =====\n\n"; return ;}
+      dir=dynamic_cast<TDirectoryFile*>(File->Get("DmesonsForJetCorrelations"));
 
       for(int i=0;i<ND; i++){
 		if(!isprefix){
@@ -86,14 +88,14 @@ void signalExtraction_SB(
 		          else histList =  (TList*)dir->Get(Form("%s%d",histName.Data(),i));
 		}
 		else{    if(postfix){ histList =  (TList*)dir->Get(Form("%s%sMBN%d",histName.Data(),listName.Data(),i));}
-		          else {cout<<postfix<<"----dude! something's wrong, postfix has to be true if prefix is, check again-----"<<endl; return;}
+		          else {cout<<postfix<<" something's wrong, postfix has to be true if prefix is, check again-----"<<endl; return;}
 		}
           sparse = (THnSparseF*)histList->FindObject("hsDphiz");
           //sparse->GetAxis(0)->SetRangeUser(zmin,zmax);
           sparse->GetAxis(1)->SetRangeUser(jetmin,jetmax);
           if(isEta) sparse->GetAxis(5)->SetRangeUser(-jetEta,jetEta);
-          if(i==0) hInvMassptD=(TH3D*)sparse->Projection(3,1,2);
-          else hInvMassptD->Add((TH3D*)sparse->Projection(3,1,2));
+          if(i==0) hInvMassptD=dynamic_cast<TH3D*>(sparse->Projection(3,1,2));
+          else hInvMassptD->Add(dynamic_cast<TH3D*>(sparse->Projection(3,1,2)));
       }
     }
     else {
@@ -102,22 +104,22 @@ void signalExtraction_SB(
           datafile += prod.Data()[j];
           datafile += ".root";
           File = new TFile(datafile,"read");
-          if(!File) { cout << "==== WRONG FILE WITH DATA =====\n\n"; return ;}
-          dir=(TDirectoryFile*)File->Get("DmesonsForJetCorrelations");
+          if(!File) { std::cout << "==== WRONG FILE WITH DATA =====\n\n"; return ;}
+          dir=dynamic_cast<TDirectoryFile*>(File->Get("DmesonsForJetCorrelations"));
 
           for(int i=0;i<ND; i++){
 if(!isprefix){          if(postfix) histList =  (TList*)dir->Get(Form("%s%d%s",histName.Data(),i,listName.Data()));
           else histList =  (TList*)dir->Get(Form("%s%d",histName.Data(),i));
 }
 else {          if(postfix) histList =  (TList*)dir->Get(Form("%s%sMBN%d",histName.Data(),listName.Data(),i));
-		          else {cout<<postfix<<"----dude! something's wrong,again! postfix has to be true if prefix is, check again-----"<<endl; return;}
+		          else {cout<<postfix<<" something's wrong,again! postfix has to be true if prefix is, check again-----"<<endl; return;}
 }
               sparse = (THnSparseF*)histList->FindObject("hsDphiz");
               //sparse->GetAxis(0)->SetRangeUser(zmin,zmax);
               sparse->GetAxis(1)->SetRangeUser(jetmin,jetmax);
               if(isEta) sparse->GetAxis(5)->SetRangeUser(-jetEta,jetEta);
-              if(j==0 && i==0) hInvMassptD=(TH3D*)sparse->Projection(3,1,2);
-              else hInvMassptD->Add((TH3D*)sparse->Projection(3,1,2));
+              if(j==0 && i==0) hInvMassptD=dynamic_cast<TH3D*>(sparse->Projection(3,1,2));
+              else hInvMassptD->Add(dynamic_cast<TH3D*>(sparse->Projection(3,1,2)));
           }
       }
     }
@@ -125,7 +127,9 @@ else {          if(postfix) histList =  (TList*)dir->Get(Form("%s%sMBN%d",histNa
     efficiency = new double[fptbinsDN];
     if(bEff){
         TFile *FileEff = new TFile(efffile.Data(),"read");
-        TH1F *hEff = (TH1F*)FileEff->Get("hEff_reb");
+        if(!FileEff)std::cout<<"no file"<<std::endl;
+        TH1D *hEff = dynamic_cast<TH1D*>(FileEff->Get("hEff_reb"));//must be double
+        if(!hEff)std::cout<<"no eff"<<std::endl;
         for(int i=0;i<fptbinsDN;i++){
             double pt = (fptbinsDA[i]+fptbinsDA[i+1]) / 2.;
             efficiency[i] = hEff->GetBinContent(hEff->GetXaxis()->FindBin(pt));
@@ -140,7 +144,7 @@ else {          if(postfix) histList =  (TList*)dir->Get(Form("%s%sMBN%d",histNa
     // --------------------------------------------------------
     // fit inv. mass in D pT bins and get raw jet pT spectra in the signal and side-bands regions
      Bool_t okSignalExt = rawJetSpectra(outdir,prod);
-     if(!okSignalExt) { std::cout << "!!!!!! Something wrong in the raw signal extraction !!!!" << endl; return; }
+     if(!okSignalExt) { std::cout << "!!!!!! Something wrong in the raw signal extraction !!!!" << std::endl; return; }
     // --------------------------------------------------------
 
     // --------------------------------------------------------
@@ -198,10 +202,10 @@ Bool_t rawJetSpectra(TString outdir, TString prod){
 
     if(fDmesonSpecie) hInvMassptD->GetXaxis()->SetTitle(Form("m(%s)(GeV/c^{2})","K#pi#pi-K#pi"));
     else hInvMassptD->GetXaxis()->SetTitle(Form("m(%s)(GeV/c^{2})","K#pi"));
-    hInvMassptD->GetXaxis()->SetTitleSize(0.06);
-    hInvMassptD->GetXaxis()->SetTitleOffset(0.9);
+    hInvMassptD->GetXaxis()->SetTitleSize(0.06f);
+    hInvMassptD->GetXaxis()->SetTitleOffset(0.9f);
     hInvMassptD->GetYaxis()->SetTitle("p_{T}^{jet}");
-    hInvMassptD->SetTitle();
+    hInvMassptD->SetTitle("");
 
     TPaveText *pvProd = new TPaveText(0.8,0.25,0.98,0.3,"brNDC");
     pvProd->SetFillStyle(0);
@@ -217,7 +221,7 @@ Bool_t rawJetSpectra(TString outdir, TString prod){
     pvEn->SetFillStyle(0);
     pvEn->SetBorderSize(0);
     pvEn->SetTextFont(42);
-    pvEn->SetTextSize(0.075);
+    pvEn->SetTextSize(0.075f);
     pvEn->SetTextAlign(11);
     pvEn->AddText(Form("%s",fSystemS.Data()));
 
@@ -226,7 +230,7 @@ Bool_t rawJetSpectra(TString outdir, TString prod){
     pvD->SetFillStyle(0);
     pvD->SetBorderSize(0);
     pvD->SetTextFont(42);
-    pvD->SetTextSize(0.085);
+    pvD->SetTextSize(0.085f);
     pvD->SetTextAlign(11);
     if(fDmesonSpecie) pvD->AddText("D^{*+} #rightarrow D^{0}#pi^{+} and charge conj.");
     else pvD->AddText("D^{0} #rightarrow K^{-}#pi^{+} and charge conj.");
@@ -235,7 +239,7 @@ Bool_t rawJetSpectra(TString outdir, TString prod){
     pvJet->SetFillStyle(0);
     pvJet->SetBorderSize(0);
     pvJet->SetTextFont(42);
-    pvJet->SetTextSize(0.085);
+    pvJet->SetTextSize(0.085f);
     pvJet->AddText(Form("in Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.%d",Rpar));
     pvJet->SetTextAlign(11);
 
@@ -243,7 +247,7 @@ Bool_t rawJetSpectra(TString outdir, TString prod){
     pvEta->SetFillStyle(0);
     pvEta->SetBorderSize(0);
     pvEta->SetTextFont(42);
-    pvEta->SetTextSize(0.085);
+    pvEta->SetTextSize(0.085f);
     pvEta->SetTextAlign(11);
     pvEta->AddText(Form("|#it{#eta}_{jet}| < 0.%d",9-Rpar));
 
@@ -270,27 +274,27 @@ Bool_t rawJetSpectra(TString outdir, TString prod){
     Float_t RS = 0;
 
     for(int i=0; i<fptbinsDN; i++){
-
-        TH1F *hh=(TH1F*)hInvMassptD->ProjectionX(Form("hh_%d",i),hInvMassptD->GetYaxis()->FindBin(jetmin), hInvMassptD->GetYaxis()->FindBin(jetmax)-1,hInvMassptD->GetZaxis()->FindBin(fptbinsDA[i]), hInvMassptD->GetZaxis()->FindBin(fptbinsDA[i+1])-1);
+        TH1D *hh= hInvMassptD->ProjectionX(Form("hh_%d",i),hInvMassptD->GetYaxis()->FindBin(jetmin), hInvMassptD->GetYaxis()->FindBin(jetmax)-1,hInvMassptD->GetZaxis()->FindBin(fptbinsDA[i]), hInvMassptD->GetZaxis()->FindBin(fptbinsDA[i+1])-1);
         hh->Rebin(fRebinMass);
-
-        hh->GetXaxis()->SetRangeUser(minf,maxf);
+        hh->GetXaxis()->SetRangeUser(static_cast<Double_t>(minf),static_cast<Double_t>(maxf));
         hh->SetTitle(Form("%.1lf < pt^{%s} < %.1lf",fptbinsDA[i],fDmesonS.Data(),fptbinsDA[i+1]));
 
-        TH1F *hmassfit = (TH1F*)hh->Clone("hmassfit");
+        TH1F *hmassfit = static_cast<TH1F*>(hh->Clone("hmassfit"));
+
         if(fDmesonSpecie) hmassfit->SetMaximum(hmassfit->GetMaximum()*1.3);
 
-        float hmin = TMath::Max(minf,hmassfit->GetBinLowEdge(2));
-        float hmax = TMath::Min(maxf,hmassfit->GetBinLowEdge(hmassfit->GetNbinsX()));
+        Float_t hmin = TMath::Max(minf,static_cast<Float_t>(hmassfit->GetBinLowEdge(2)));
+        Float_t hmax = TMath::Min(maxf,static_cast<Float_t>(hmassfit->GetBinLowEdge(hmassfit->GetNbinsX())));
        // AliHFMassFitter* fitterp=new AliHFMassFitter((TH1F*)hmassfit,hmin,hmax,1,fbkgtype,0);
-        AliHFInvMassFitter* fitterp = new AliHFInvMassFitter((TH1F*)hmassfit,hmin,hmax,fbkgtype,0);
-        fitterp->SetInitialGaussianMean(fDmass);
-        fitterp->SetInitialGaussianSigma(fDsigma);
-        //fitterp->SetFixGaussianSigma(fDsigmafix[i]);
+
+        AliHFInvMassFitter* fitterp = new AliHFInvMassFitter(hmassfit,static_cast<Double_t>(hmin),static_cast<Double_t>(hmax),fbkgtype,0);
+        fitterp->SetInitialGaussianMean(static_cast<Double_t>(fDmass));
+        fitterp->SetInitialGaussianSigma(static_cast<Double_t>(fDsigma));
+
 
         if(fUseRefl && fDmesonSpecie == 0) {
           if(fSystem) SetReflection(fitterp,hmin,hmax,RS,i+firstPtBin); // older way from Fabio's templates for p-Pb
-          else SetReflection(fitterp,hmin,hmax,RS,(Int_t)fptbinsDA[i],(Int_t)fptbinsDA[i+1]); // new for pp (new templates from D-jet code)
+          else SetReflection(fitterp,hmin,hmax,RS,static_cast<Int_t>(fptbinsDA[i]),static_cast<Int_t>(fptbinsDA[i+1])); // new for pp (new templates from D-jet code)
         }
 
         fitterp->MassFitter(kFALSE);
@@ -298,16 +302,16 @@ Bool_t rawJetSpectra(TString outdir, TString prod){
 
         TH1F* h=fitterp->GetHistoClone();
         massfit[i] = fitterp->GetMassFunc();
-        massfit[i]->SetRange(hmin,hmax);
+        massfit[i]->SetRange(static_cast<Double_t>(hmin),static_cast<Double_t>(hmax));
         massfit[i]->SetLineColor(4);
         fullfit[i] = h->GetFunction("funcmass");
         if(fullfit[i]) fullfit[i]->SetName(Form("fullfit_%d",i));
-        hmass[i] = (TH1F*)h->Clone(Form("hmass_%d",i));
+        hmass[i] = static_cast<TH1F*>(h->Clone(Form("hmass_%d",i)));
         hmass[i]->SetName(Form("hmass_%d",i));
         hmass[i]->GetYaxis()->SetTitle("Entries");
         hmass[i]->GetXaxis()->SetTitle("Invariant Mass (GeV/c^{2})");
         bkgfit[i] = fitterp->GetBackgroundRecalcFunc();
-        bkgfit[i]->SetRange(hmin,hmax);
+        bkgfit[i]->SetRange(static_cast<Double_t>(hmin),static_cast<Double_t>(hmax));
         bkgfit[i]->SetLineColor(2);
         bkgfit[i]->SetName(Form("bkgFit_%d",i));
 
@@ -315,32 +319,32 @@ Bool_t rawJetSpectra(TString outdir, TString prod){
         if(fUseRefl && fDmesonSpecie == 0) {
           bkgRfit[i] = fitterp->GetBkgPlusReflFunc();
           bkgRfit[i]->SetName(Form("bkgFitWRef_%d",i));
-          bkgRfit[i]->SetRange(hmin,hmax);
+          bkgRfit[i]->SetRange(static_cast<Double_t>(hmin),static_cast<Double_t>(hmax));
           bkgRfit[i]->SetLineColor(15);
-          hReflRS->SetBinContent(i+1,RS);
+          hReflRS->SetBinContent(i+1,static_cast<Double_t>(RS));
           hReflRS->SetBinError(i+1,0);
         }
 
-        TVirtualPad *pad = (TVirtualPad*)c2->GetPad(i+1);
+        TVirtualPad *pad = dynamic_cast<TVirtualPad*>(c2->GetPad(i+1));
         fitterp->DrawHere(pad,3,0);
 
-        float Dsigma = 0, Dmean = 0, DmeanUnc = 0, DsigmaUnc = 0;
+        Double_t Dsigma = 0, Dmean = 0, DmeanUnc = 0, DsigmaUnc = 0;
 
-        if(!fullfit[i]) { std::cout << "======= Fit failed for bin: " << i << endl; continue; }
+        if(!fullfit[i]) { std::cout << "======= Fit failed for bin: " << i << std::endl; continue; }
 
         Dsigma = fitterp->GetSigma();
         DsigmaUnc  = fitterp->GetSigmaUncertainty();
         Dmean = fitterp->GetMean();
         DmeanUnc = fitterp->GetMeanUncertainty();
 
-        Double_t signal_c_min = Dmean-fsigmaSignal*Dsigma;
-        Double_t signal_c_max = Dmean+fsigmaSignal*Dsigma;
-        Double_t signal_l_min = Dmean+fsigmaBkg[0]*Dsigma;
-        Double_t signal_l_max = Dmean+fsigmaBkg[1]*Dsigma;
-        Double_t signal_u_min = Dmean+fsigmaBkg[2]*Dsigma;
-        Double_t signal_u_max = Dmean+fsigmaBkg[3]*Dsigma;
-        if(signal_l_min<hmin) signal_l_min = hmin;
-        if(signal_u_max>hmax) signal_u_max = hmax;
+        Double_t signal_c_min = Dmean-static_cast<Double_t>(fsigmaSignal)*Dsigma;
+        Double_t signal_c_max = Dmean+static_cast<Double_t>(fsigmaSignal)*Dsigma;
+        Double_t signal_l_min = Dmean+static_cast<Double_t>(fsigmaBkg[0])*Dsigma;
+        Double_t signal_l_max = Dmean+static_cast<Double_t>(fsigmaBkg[1])*Dsigma;
+        Double_t signal_u_min = Dmean+static_cast<Double_t>(fsigmaBkg[2])*Dsigma;
+        Double_t signal_u_max = Dmean+static_cast<Double_t>(fsigmaBkg[3])*Dsigma;
+        if(signal_l_min<static_cast<Double_t>(hmin)) signal_l_min = static_cast<Double_t>(hmin);
+        if(signal_u_max>static_cast<Double_t>(hmax)) signal_u_max = static_cast<Double_t>(hmax);
 
         Double_t binwidth = hmass[i]->GetXaxis()->GetBinWidth(1)*0.5;
         // signal
@@ -362,24 +366,24 @@ Bool_t rawJetSpectra(TString outdir, TString prod){
 
         Double_t s=0, serr=0, srelerr=0, bkg=0, bkgerr=0, bkgref=0, ref=0;
         Double_t sb1=0, sb2=0, ref1=0, ref2=0;
-        fitterp->Signal(fsigmaSignal, s, serr);
+        fitterp->Signal(static_cast<Double_t>(fsigmaSignal), s, serr);
         fitterp->Background(min, max ,bkg, bkgerr);
         //fitterp->Background(fsigmaSignal,b,berr);
-        sb1 = bkgfit[i]->Integral(min_sb1,max_sb1)/(Double_t)hmass[i]->GetBinWidth(1);
-        sb2 = bkgfit[i]->Integral(min_sb2,max_sb2)/(Double_t)hmass[i]->GetBinWidth(1);
+        sb1 = bkgfit[i]->Integral(min_sb1,max_sb1)/static_cast<Double_t>(hmass[i]->GetBinWidth(1));
+        sb2 = bkgfit[i]->Integral(min_sb2,max_sb2)/static_cast<Double_t>(hmass[i]->GetBinWidth(1));
         if(fUseRefl && fDmesonSpecie == 0) {
-          bkgref = bkgRfit[i]->Integral(min,max)/(Double_t)hmass[i]->GetBinWidth(1);
+          bkgref = bkgRfit[i]->Integral(min,max)/static_cast<Double_t>(hmass[i]->GetBinWidth(1));
           ref = bkgref - bkg;
-          ref1 = (bkgRfit[i]->Integral(min_sb1,max_sb1)/(Double_t)hmass[i]->GetBinWidth(1)) - sb1;
-          ref2 = (bkgRfit[i]->Integral(min_sb2,max_sb2)/(Double_t)hmass[i]->GetBinWidth(1)) - sb2;
+          ref1 = (bkgRfit[i]->Integral(min_sb1,max_sb1)/static_cast<Double_t>(hmass[i]->GetBinWidth(1))) - sb1;
+          ref2 = (bkgRfit[i]->Integral(min_sb2,max_sb2)/static_cast<Double_t>(hmass[i]->GetBinWidth(1))) - sb2;
         }
 
         Double_t signf=0,signferr=0,sob=0,soberr=0;
-        fitterp->Significance(fsigmaSignal,signf,signferr);
-        if(s) srelerr = serr/s;
-        if(bkg) sob = s/bkg;
+        fitterp->Significance(static_cast<Double_t>(fsigmaSignal),signf,signferr);
+        if(static_cast<Bool_t>(s)) srelerr = serr/s;
+        if(static_cast<Bool_t>(bkg)) sob = s/bkg;
         else sob = s;
-        if(bkg && bkgerr) soberr = TMath::Sqrt((serr/bkg)*(serr/bkg) + (s/bkg/bkg*bkgerr)*(s/bkg/bkg*bkgerr));
+        if(static_cast<Bool_t>(bkg) && static_cast<Bool_t>(bkgerr)) soberr = TMath::Sqrt((serr/bkg)*(serr/bkg) + (s/bkg/bkg*bkgerr)*(s/bkg/bkg*bkgerr));
         else soberr = serr;
 
         TPaveText *pvSig;
@@ -433,13 +437,13 @@ Bool_t rawJetSpectra(TString outdir, TString prod){
         hSignal->SetBinError(i+1,serr);
 
         // ---------------- side-band drawing
-       hmass_l[i] = (TH1F*)hmass[i]->Clone("hmass_l");
+       hmass_l[i] = static_cast<TH1F*>(hmass[i]->Clone("hmass_l"));
         hmass_l[i]->GetXaxis()->SetRangeUser(signal_l_min,signal_l_max);
         hmass_l[i]->SetName(Form("hmass_l_%d",i));
-        hmass_u[i] = (TH1F*)hmass[i]->Clone("hmass_u");
+        hmass_u[i] = static_cast<TH1F*>(hmass[i]->Clone("hmass_u"));
         hmass_u[i]->GetXaxis()->SetRangeUser(signal_u_min,signal_u_max);
         hmass_u[i]->SetName(Form("hmass_u_%d",i));
-        hmass_c[i] = (TH1F*)hmass[i]->Clone("hmass_c");
+        hmass_c[i] = static_cast<TH1F*>(hmass[i]->Clone("hmass_c"));
         hmass_c[i]->GetXaxis()->SetRangeUser(signal_c_min,signal_c_max);
         hmass_c[i]->SetName(Form("hmass_c_%d",i));
 
@@ -456,22 +460,22 @@ Bool_t rawJetSpectra(TString outdir, TString prod){
 
         //----------------------------------
         //-------- jet pt spectrum - signal
-        hjetpt[i]=(TH1F*)hInvMassptD->ProjectionY(Form("hjetpt_%d",i),hInvMassptD->GetXaxis()->FindBin(signal_c_min), hInvMassptD->GetXaxis()->FindBin(signal_c_max)-1,hInvMassptD->GetZaxis()->FindBin(fptbinsDA[i]), hInvMassptD->GetZaxis()->FindBin(fptbinsDA[i+1])-1);
+        hjetpt[i]=reinterpret_cast<TH1F*>(hInvMassptD->ProjectionY(Form("hjetpt_%d",i),hInvMassptD->GetXaxis()->FindBin(signal_c_min), hInvMassptD->GetXaxis()->FindBin(signal_c_max)-1,hInvMassptD->GetZaxis()->FindBin(fptbinsDA[i]), hInvMassptD->GetZaxis()->FindBin(fptbinsDA[i+1])-1));
         hjetpt[i]->GetXaxis()->SetRangeUser(jetplotmin,jetplotmax);
         hjetpt[i]->SetTitle(Form("%.1lf < pt^{%s} < %.1lf",fptbinsDA[i],fDmesonS.Data(),fptbinsDA[i+1]));
         hjetpt[i]->SetMarkerColor(kRed+2);
         hjetpt[i]->SetLineColor(kRed+2);
 
         //------ jet pt spectrum - side bands
-        TH1F* hjetpt_sb1=(TH1F*)hInvMassptD->ProjectionY(Form("hjetpt_sb1%d",i),hInvMassptD->GetXaxis()->FindBin(signal_l_min), hInvMassptD->GetXaxis()->FindBin(signal_l_max)-1,hInvMassptD->GetZaxis()->FindBin(fptbinsDA[i]), hInvMassptD->GetZaxis()->FindBin(fptbinsDA[i+1])-1);
+        TH1F* hjetpt_sb1=reinterpret_cast<TH1F*>(hInvMassptD->ProjectionY(Form("hjetpt_sb1%d",i),hInvMassptD->GetXaxis()->FindBin(signal_l_min), hInvMassptD->GetXaxis()->FindBin(signal_l_max)-1,hInvMassptD->GetZaxis()->FindBin(fptbinsDA[i]), hInvMassptD->GetZaxis()->FindBin(fptbinsDA[i+1])-1));
         hjetpt_sb1->SetTitle(Form("%.1lf < pt^{%s} < %.1lf",fptbinsDA[i],fDmesonS.Data(),fptbinsDA[i+1]));
         hjetpt_sb1->SetMarkerColor(kBlue+2);
         hjetpt_sb1->SetLineColor(kBlue+2);
-        TH1F* hjetpt_sb2=(TH1F*)hInvMassptD->ProjectionY(Form("hjetpt_sb2%d",i),hInvMassptD->GetXaxis()->FindBin(signal_u_min), hInvMassptD->GetXaxis()->FindBin(signal_u_max)-1,hInvMassptD->GetZaxis()->FindBin(fptbinsDA[i]), hInvMassptD->GetZaxis()->FindBin(fptbinsDA[i+1])-1);
+        TH1F* hjetpt_sb2=reinterpret_cast<TH1F*>(hInvMassptD->ProjectionY(Form("hjetpt_sb2%d",i),hInvMassptD->GetXaxis()->FindBin(signal_u_min), hInvMassptD->GetXaxis()->FindBin(signal_u_max)-1,hInvMassptD->GetZaxis()->FindBin(fptbinsDA[i]), hInvMassptD->GetZaxis()->FindBin(fptbinsDA[i+1])-1));
         hjetpt_sb2->SetTitle(Form("%.1lf < pt^{%s} < %.1lf",fptbinsDA[i],fDmesonS.Data(),fptbinsDA[i+1]));
         hjetpt_sb2->SetMarkerColor(kBlue+2);
         hjetpt_sb2->SetLineColor(kBlue+2);
-        hjetpt_sb[i] = (TH1F*)hjetpt_sb1->Clone(Form("hjetpt_sb_%d",i));
+        hjetpt_sb[i] = static_cast<TH1F*>(hjetpt_sb1->Clone(Form("hjetpt_sb_%d",i)));
         hjetpt_sb[i]->Add(hjetpt_sb2);
 
         hjetpt[i]->GetXaxis()->SetRangeUser(jetplotmin,jetplotmax);
@@ -483,8 +487,8 @@ Bool_t rawJetSpectra(TString outdir, TString prod){
         //double scalingB = bkg / hjetpt_sb[i]->Integral();
 
       //  cout << "====================== scaling: " << sb2 << endl;
-        double scalingB = bkg/(sb1+sb2);
-        double scalingS;
+        Double_t scalingB = bkg/(sb1+sb2);
+        Double_t scalingS = 0.0;
 
         if(fUseRefl && fDmesonSpecie == 0) {
           scalingS = s / ( s+ref - ( (ref1+ref2)*bkg ) / (sb1+sb2) );
@@ -493,14 +497,14 @@ Bool_t rawJetSpectra(TString outdir, TString prod){
         hjetpt_sb[i]->Scale(scalingB);
 
         //------- subtract background from signal jet
-        hjetptsub[i] = (TH1F*)hjetpt[i]->Clone(Form("hjetptsub_%d",i));
-       	hjetptsub[i]->Add(hjetpt_sb[i],-1);
+        hjetptsub[i] = static_cast<TH1F*>(hjetpt[i]->Clone(Form("hjetptsub_%d",i)));
+        hjetptsub[i]->Add(hjetpt_sb[i],-1);
         if(fUseRefl && fDmesonSpecie == 0) {
           hjetptsub[i]->Scale(scalingS);
         }
-	//hjetptsub[i]->Add(hjetpt_sb[i],-1);
+    //hjetptsub[i]->Add(hjetpt_sb[i],-1);
 
-	if(fsigmaSignal==2) hjetptsub[i] = hjetptsub[i]->Scale(1./0.9545);
+    if(fsigmaSignal==2) hjetptsub[i]->Scale(1./0.9545);
         hjetptsub[i]->SetMarkerColor(kGreen+3);
         hjetptsub[i]->SetLineColor(kGreen+3);
 
@@ -521,11 +525,11 @@ Bool_t rawJetSpectra(TString outdir, TString prod){
         l2->AddEntry(hjetptsub[i],"bkg subtracted","l");
         l1->AddEntry(hjetptsub[i],"sig-SB","l");
         //l2->Draw("same");
-        if(!hrawjetptspectrum) hrawjetptspectrum = (TH1F*)hjetptsub[i]->Clone("hrawjetptspectrum");
+        if(!hrawjetptspectrum) hrawjetptspectrum = static_cast<TH1F*>(hjetptsub[i]->Clone("hrawjetptspectrum"));
         else hrawjetptspectrum->Add(hjetptsub[i]);
 
         //------- correct for D* efficiency
-        hjetptcorr[i] = (TH1F*)hjetptsub[i]->Clone(Form("hjetptcorr_%d",i));
+        hjetptcorr[i] = static_cast<TH1F*>(hjetptsub[i]->Clone(Form("hjetptcorr_%d",i)));
         if(bEff) hjetptcorr[i]->Scale(1./efficiency[i]); // D efficiency
         hjetptcorr[i]->SetMarkerColor(kBlue+3);
         hjetptcorr[i]->SetLineColor(kBlue+3);
@@ -539,17 +543,17 @@ Bool_t rawJetSpectra(TString outdir, TString prod){
         l3->Draw("same");
 
         //----- add corrected jet pt spectrum distributions in each D pt bin into a one distribution
-        if(!hjetptspectrum) hjetptspectrum = (TH1F*)hjetptcorr[i]->Clone("hjetptspectrum");
+        if(!hjetptspectrum) hjetptspectrum = static_cast<TH1F*>(hjetptcorr[i]->Clone("hjetptspectrum"));
         else hjetptspectrum->Add(hjetptcorr[i]);
 
     }
 
-    c2->cd(i+1);
+    c2->cd(fptbinsDN+1);
     pvEn->Draw();
     pvD->Draw("same");
     pvJet->Draw("same");
     pvEta->Draw("same");
-    c2jet->cd(i+1);
+    c2jet->cd(fptbinsDN+1);
     pvEn->Draw();
     pvD->Draw("same");
     pvJet->Draw("same");
@@ -571,19 +575,19 @@ Bool_t SetReflection(AliHFInvMassFitter* &fitter, Float_t fLeftFitRange, Float_t
 
   TString fHistnameRefl = "histRflFittedDoubleGaus_ptBin";
   TString fHistnameSign = "histSgn_";
-  TH1F *histRefl = (TH1F*)fileRefl->Get(Form("%s%d",fHistnameRefl.Data(),iBin));
-  TH1F *histSign = (TH1F*)fileRefl->Get(Form("%s%d",fHistnameSign.Data(),iBin));
+  TH1F *histRefl = dynamic_cast<TH1F*>(fileRefl->Get(Form("%s%d",fHistnameRefl.Data(),iBin)));
+  TH1F *histSign = dynamic_cast<TH1F*>(fileRefl->Get(Form("%s%d",fHistnameSign.Data(),iBin)));
   if(!histRefl || !histSign){
-    std::cout << "Error in loading the template/signal histrograms! Exiting..." << endl; return kFALSE;
+    std::cout << "Error in loading the template/signal histrograms! Exiting..." << std::endl; return kFALSE;
   }
 
-  fitter->SetTemplateReflections(histRefl,"template",fLeftFitRange,fRightFitRange);
-  Double_t RoverS = histRefl->Integral(histRefl->FindBin(fLeftFitRange),histRefl->FindBin(fRightFitRange))/histSign->Integral(histSign->FindBin(fLeftFitRange),histSign->FindBin(fRightFitRange));
+  fitter->SetTemplateReflections(histRefl,"template",static_cast<Double_t>(fLeftFitRange),static_cast<Double_t>(fRightFitRange));
+  Double_t RoverS = histRefl->Integral(histRefl->FindBin(static_cast<Double_t>(fLeftFitRange)),histRefl->FindBin(static_cast<Double_t>(fRightFitRange)))/histSign->Integral(histSign->FindBin(static_cast<Double_t>(fLeftFitRange)),histSign->FindBin(static_cast<Double_t>(fRightFitRange)));
   if(isRefSys) RoverS*=refScale;
   printf("R/S ratio in fit range for bin %d = %1.3f\n",iBin,RoverS);
   fitter->SetFixReflOverS(RoverS);
 
-  RS = (Float_t)RoverS;
+  RS = static_cast<Float_t>(RoverS);
   return kTRUE;
 
 }
@@ -598,19 +602,19 @@ Bool_t SetReflection(AliHFInvMassFitter* &fitter, Float_t fLeftFitRange, Float_t
 
   TString fHistnameRefl = "histRflFittedDoubleGaus_pt";
   TString fHistnameSign = "histSgn_";
-  TH1F *histRefl = (TH1F*)fileRefl->Get(Form("%s%d_%d",fHistnameRefl.Data(),ptmin,ptmax));
-  TH1F *histSign = (TH1F*)fileRefl->Get(Form("%s%d_%d",fHistnameSign.Data(),ptmin,ptmax));
+  TH1F *histRefl = dynamic_cast<TH1F*>(fileRefl->Get(Form("%s%d_%d",fHistnameRefl.Data(),ptmin,ptmax)));
+  TH1F *histSign = dynamic_cast<TH1F*>(fileRefl->Get(Form("%s%d_%d",fHistnameSign.Data(),ptmin,ptmax)));
   if(!histRefl || !histSign){
-    std::cout << "Error in loading the template/signal histrograms! Exiting..." << endl; return kFALSE;
+    std::cout << "Error in loading the template/signal histrograms! Exiting..." << std::endl; return kFALSE;
   }
 
-  fitter->SetTemplateReflections(histRefl,"template",fLeftFitRange,fRightFitRange);
-  Double_t RoverS = histRefl->Integral(histRefl->FindBin(fLeftFitRange),histRefl->FindBin(fRightFitRange))/histSign->Integral(histSign->FindBin(fLeftFitRange),histSign->FindBin(fRightFitRange));
+  fitter->SetTemplateReflections(histRefl,"template",static_cast<Double_t>(fLeftFitRange),static_cast<Double_t>(fRightFitRange));
+  Double_t RoverS = histRefl->Integral(histRefl->FindBin(static_cast<Double_t>(fLeftFitRange)),histRefl->FindBin(static_cast<Double_t>(fRightFitRange)))/histSign->Integral(histSign->FindBin(static_cast<Double_t>(fLeftFitRange)),histSign->FindBin(static_cast<Double_t>(fRightFitRange)));
   if(isRefSys) RoverS*=refScale;
   //printf("R/S ratio in fit range for bin %d = %1.3f\n",iBin,RoverS);
   fitter->SetFixReflOverS(RoverS);
 
-  RS = (Float_t)RoverS;
+  RS = static_cast<Float_t>(RoverS);
   return kTRUE;
 
 }
@@ -631,7 +635,7 @@ void  saveSpectraPlots(TString outdir,TString prod){
       pvEn->SetFillStyle(0);
       pvEn->SetBorderSize(0);
       pvEn->SetTextFont(42);
-      pvEn->SetTextSize(0.045);
+      pvEn->SetTextSize(0.045f);
       pvEn->SetTextAlign(11);
       pvEn->AddText(Form("%s",fSystemS.Data()));
 
@@ -640,7 +644,7 @@ void  saveSpectraPlots(TString outdir,TString prod){
       pvJet->SetFillStyle(0);
       pvJet->SetBorderSize(0);
       pvJet->SetTextFont(42);
-      pvJet->SetTextSize(0.04);
+      pvJet->SetTextSize(0.04f);
       pvJet->SetTextAlign(11);
       pvJet->AddText(Form("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.%d",Rpar));
 
@@ -649,7 +653,7 @@ void  saveSpectraPlots(TString outdir,TString prod){
       pvD->SetFillStyle(0);
       pvD->SetBorderSize(0);
       pvD->SetTextFont(42);
-      pvD->SetTextSize(0.04);
+      pvD->SetTextSize(0.04f);
       pvD->SetTextAlign(11);
       if(fDmesonSpecie) pvD->AddText("with D^{*+} #rightarrow D^{0}#pi^{+} and charge conj.");
       else pvD->AddText("with D^{0} #rightarrow K^{-}#pi^{+} and charge conj.");
@@ -659,7 +663,7 @@ void  saveSpectraPlots(TString outdir,TString prod){
       pvEta->SetFillStyle(0);
       pvEta->SetBorderSize(0);
       pvEta->SetTextFont(42);
-      pvEta->SetTextSize(0.04);
+      pvEta->SetTextSize(0.04f);
       pvEta->SetTextAlign(11);
       pvEta->AddText(Form("|#it{#eta}_{jet}| < 0.%d",9-Rpar));
 
@@ -668,13 +672,13 @@ void  saveSpectraPlots(TString outdir,TString prod){
       pv3->SetFillStyle(0);
       pv3->SetBorderSize(0);
       pv3->SetTextFont(42);
-      pv3->SetTextSize(0.04);
+      pv3->SetTextSize(0.04f);
       pv3->SetTextAlign(11);
-      pv3->AddText(Form("%d < p_{T,%s} < %d GeV/#it{c}",(Int_t)fptbinsDA[0],fDmesonS.Data(),(Int_t)fptbinsDA[fptbinsDN]));
+      pv3->AddText(Form("%d < p_{T,%s} < %d GeV/#it{c}",static_cast<Int_t>(fptbinsDA[0]),fDmesonS.Data(),static_cast<Int_t>(fptbinsDA[fptbinsDN])));
 
        // before eff. correction
       TCanvas *cRawSpectrum = new TCanvas("cRawSpectrum","cRawSpectrum",800,600);
-      setHistoDetails(hrawjetptspectrum,0,kBlue+1,20,1.2);
+      setHistoDetails(hrawjetptspectrum,0,kBlue+1,20,static_cast<Size_t>(1.2));
       hrawjetptspectrum->GetXaxis()->SetTitle("p_{T}^{ch,jet} (GeV/c)");
       hrawjetptspectrum->GetYaxis()->SetTitle("Raw dN/dp_{T}");
       hrawjetptspectrum->GetXaxis()->SetRangeUser(jetplotmin,jetplotmax);
@@ -688,7 +692,7 @@ void  saveSpectraPlots(TString outdir,TString prod){
 
       TCanvas *cSpectrum = new TCanvas("cSpectrum","cSpectrum",800,600);
       cSpectrum->SetLogy();
-      setHistoDetails(hjetptspectrum,0,kRed,20,1.2);
+      setHistoDetails(hjetptspectrum,0,kRed,20,static_cast<Size_t>(1.2));
       hjetptspectrum->SetMinimum(1);
       hjetptspectrum->GetXaxis()->SetTitle("p_{T,ch jet} (GeV/c)");
       hjetptspectrum->Draw();
@@ -701,11 +705,11 @@ void  saveSpectraPlots(TString outdir,TString prod){
       if(isdetails) pvCuts->Draw("same");
       if(savePlots) SaveCanvas(cSpectrum,outdir+plotsDir+"/jetPtSpectrum_SB"+prod);
 
-      TH1F *hjetptspectrumReb_tmp = (TH1F*)hjetptspectrum->Clone("hjetptspectrumReb_tmp");
-      hjetptspectrumReb = (TH1F*)hjetptspectrumReb_tmp->Rebin(fptbinsJetMeasN,"hjetptspectrumReb",fptbinsJetMeasA);
-      hjetptspectrumRebScaled = (TH1F*)hjetptspectrumReb_tmp->Rebin(fptbinsJetMeasN,"hjetptspectrumRebScaled",fptbinsJetMeasA);
-      setHistoDetails(hjetptspectrumReb,0,kBlue,20,1.2); // with bin width scaling
-      setHistoDetails(hjetptspectrumRebScaled,1,kBlue,20,1.2); // with bin width scaling
+      TH1F *hjetptspectrumReb_tmp = static_cast<TH1F*>(hjetptspectrum->Clone("hjetptspectrumReb_tmp"));
+      hjetptspectrumReb = static_cast<TH1F*>(hjetptspectrumReb_tmp->Rebin(fptbinsJetMeasN,"hjetptspectrumReb",fptbinsJetMeasA));
+      hjetptspectrumRebScaled = static_cast<TH1F*>(hjetptspectrumReb_tmp->Rebin(fptbinsJetMeasN,"hjetptspectrumRebScaled",fptbinsJetMeasA));
+      setHistoDetails(hjetptspectrumReb,0,kBlue,20,static_cast<Size_t>(1.2)); // with bin width scaling
+      setHistoDetails(hjetptspectrumRebScaled,1,kBlue,20,static_cast<Size_t>(1.2)); // with bin width scaling
       hjetptspectrumReb->GetXaxis()->SetTitle("p_{T,ch jet} (GeV/c)");
       hjetptspectrumRebScaled->GetXaxis()->SetTitle("p_{T,ch jet} (GeV/c)");
       TCanvas *cSpectrumRebin = new TCanvas("cSpectrumRebin","cSpectrumRebin",800,600);
@@ -721,13 +725,13 @@ void  saveSpectraPlots(TString outdir,TString prod){
 
       SaveCanvas(cSpectrumRebin,outdir+plotsDir+"/jetPtSpectrum_SB_Rebin"+prod);
 
-      hjetptspectrumRebUnc = (TH1F*)hjetptspectrumReb->Clone("hjetptspectrumRebUnc");
+      hjetptspectrumRebUnc = static_cast<TH1F*>(hjetptspectrumReb->Clone("hjetptspectrumRebUnc"));
       hjetptspectrumRebUnc->GetYaxis()->SetTitle("Rel. unc.");
 
 
       for(int j=1; j<=hjetptspectrumReb->GetNbinsX();j++){
                   double err;
-                  if(hjetptspectrumReb->GetBinContent(j)) err = hjetptspectrumReb->GetBinError(j)/hjetptspectrumReb->GetBinContent(j);
+                  if(static_cast<Bool_t>(hjetptspectrumReb->GetBinContent(j))) err = hjetptspectrumReb->GetBinError(j)/hjetptspectrumReb->GetBinContent(j);
                   else err = 0;
                   hjetptspectrumRebUnc->SetBinContent(j,err);
                   hjetptspectrumRebUnc->SetBinError(j,0);
@@ -736,40 +740,40 @@ void  saveSpectraPlots(TString outdir,TString prod){
       hjetptspectrumRebUnc->SetMinimum(0);
       hjetptspectrumRebUnc->SetMaximum(hjetptspectrumRebUnc->GetMaximum()*1.2);
 
-      double shift = 0;
-      TPaveText *pvJet = new TPaveText(0.15,0.65-shift,0.9,0.7-shift,"brNDC");
+      shift = 0;
+      pvJet = new TPaveText(0.15,0.65-shift,0.9,0.7-shift,"brNDC");
       pvJet->SetFillStyle(0);
       pvJet->SetBorderSize(0);
       pvJet->SetTextFont(42);
-      pvJet->SetTextSize(0.04);
+      pvJet->SetTextSize(0.04f);
       pvJet->SetTextAlign(11);
       if(fDmesonSpecie) pvJet->AddText("D^{*+} #rightarrow D^{0}#pi^{+} and charge conj.");
       else pvJet->AddText(Form("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.%d",Rpar));
 
-      TPaveText *pvD = new TPaveText(0.15,0.58-shift,0.9,0.63-shift,"brNDC");
+      pvD = new TPaveText(0.15,0.58-shift,0.9,0.63-shift,"brNDC");
       pvD->SetFillStyle(0);
       pvD->SetBorderSize(0);
       pvD->SetTextFont(42);
-      pvD->SetTextSize(0.04);
+      pvD->SetTextSize(0.04f);
       pvD->SetTextAlign(11);
       if(fDmesonSpecie) pvD->AddText("with D^{*+} #rightarrow D^{0}#pi^{+} and charge conj.");
       else pvD->AddText("with D^{0} #rightarrow K^{-}#pi^{+} and charge conj.");
 
-      TPaveText *pvEta = new TPaveText(0.15,0.51-shift,0.8,0.56-shift,"brNDC");
+      pvEta = new TPaveText(0.15,0.51-shift,0.8,0.56-shift,"brNDC");
       pvEta->SetFillStyle(0);
       pvEta->SetBorderSize(0);
       pvEta->SetTextFont(42);
-      pvEta->SetTextSize(0.04);
+      pvEta->SetTextSize(0.04f);
       pvEta->SetTextAlign(11);
       pvEta->AddText(Form("|#it{#eta}_{jet}| < 0.%d",9-Rpar));
 
-      TPaveText *pv3 = new TPaveText(0.15,0.44,0.9,0.49,"brNDC");
+      pv3 = new TPaveText(0.15,0.44,0.9,0.49,"brNDC");
       pv3->SetFillStyle(0);
       pv3->SetBorderSize(0);
       pv3->SetTextFont(42);
-      pv3->SetTextSize(0.04);
+      pv3->SetTextSize(0.04f);
       pv3->SetTextAlign(11);
-      pv3->AddText(Form("%d < p_{T,%s} < %d GeV/#it{c}",(Int_t)fptbinsDA[0],fDmesonS.Data(),(Int_t)fptbinsDA[fptbinsDN]));
+      pv3->AddText(Form("%d < p_{T,%s} < %d GeV/#it{c}",static_cast<Int_t>(fptbinsDA[0]),fDmesonS.Data(),static_cast<Int_t>(fptbinsDA[fptbinsDN])));
 
       TCanvas *cSpectrumRebinUnc = new TCanvas("cSpectrumRebinUnc","cSpectrumRebinUnc",800,500);
 
@@ -804,7 +808,7 @@ void  saveFitParams(TString outdir,TString prod){
     pvEn->SetFillStyle(0);
     pvEn->SetBorderSize(0);
     pvEn->SetTextFont(42);
-    pvEn->SetTextSize(0.045);
+    pvEn->SetTextSize(0.045f);
     pvEn->SetTextAlign(11);
     pvEn->AddText(Form("%s",fSystemS.Data()));
 
@@ -820,7 +824,7 @@ void  saveFitParams(TString outdir,TString prod){
     setHistoDetails(hrelErr,0,6,20);
     hrelErr->GetYaxis()->SetTitle("rel. unc.");
 
-    hmean->GetYaxis()->SetTitleOffset(1.8);
+    hmean->GetYaxis()->SetTitleOffset(1.8f);
 
 
     if(fDmesonSpecie) {
@@ -835,8 +839,8 @@ void  saveFitParams(TString outdir,TString prod){
     hSignal->SetName("hSignal");
     setHistoDetails(hSignal,0,2,20);
     hSignal->GetYaxis()->SetTitle("yield");
-    hSignal->GetYaxis()->SetTitleOffset(1.6);
-    hrelErr->GetYaxis()->SetTitleOffset(1.6);
+    hSignal->GetYaxis()->SetTitleOffset(1.6f);
+    hrelErr->GetYaxis()->SetTitleOffset(1.6f);
 
 
     double mean = 145.421;
@@ -846,7 +850,7 @@ void  saveFitParams(TString outdir,TString prod){
     TCanvas *cMassFit = new TCanvas("cMassFit","cMassFit",1200,600);
     cMassFit->Divide(2,1);
     cMassFit->cd(1);
-    gPad->SetLeftMargin(0.15);
+    gPad->SetLeftMargin(0.15f);
     hmean->Draw();
     pvEn->Draw("same");
     if(isdetails) pvProd->Draw("same");
@@ -894,7 +898,7 @@ void  saveFitParams(TString outdir,TString prod){
     }
 
 }
-void setHistoDetails(TH1 *h, int scale, Color_t color, Style_t Mstyle, Size_t size = 0.9, Width_t width=2){
+void setHistoDetails(TH1 *h, int scale, Color_t color, Style_t Mstyle, Size_t size, Width_t width){
 
     if(scale)h->Scale(1,"width");
     h->SetMarkerStyle(Mstyle);
@@ -902,20 +906,21 @@ void setHistoDetails(TH1 *h, int scale, Color_t color, Style_t Mstyle, Size_t si
     h->SetMarkerSize(size);
     h->SetLineColor(color);
     h->SetLineWidth(width);
-    h->SetTitle(0);
+    h->SetTitle("");
     h->GetXaxis()->SetTitle(Form("p_{T,%s}(GeV/c)",fDmesonS.Data()));
 
 
     return;
 }
 
-void SaveCanvas(TCanvas *c, TString name = "tmp"){
+void SaveCanvas(TCanvas *c, TString name){
 
-    c->SaveAs(Form("%s_pTD%d.png",name.Data(),(int)fptbinsDA[0]));
-    c->SaveAs(Form("%s_pTD%d.pdf",name.Data(),(int)fptbinsDA[0]));
+    c->SaveAs(Form("%s_pTD%d.png",name.Data(),static_cast<Int_t>(fptbinsDA[0])));
+    c->SaveAs(Form("%s_pTD%d.pdf",name.Data(),static_cast<Int_t>(fptbinsDA[0])));
 }
 
 void setStyle(){
 
 
 }
+

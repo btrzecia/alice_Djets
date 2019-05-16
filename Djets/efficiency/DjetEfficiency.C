@@ -8,18 +8,44 @@
 
 using namespace std;
 
+void setHistoDetails(TH1 *h, Color_t color, Style_t Mstyle, Size_t size = 0.9, Width_t width=2){
+
+    h->SetMarkerStyle(Mstyle);
+    h->SetMarkerColor(color);
+    h->SetMarkerSize(size);
+    h->SetLineColor(color);
+    h->SetLineWidth(width);
+    h->SetTitle(0);
+    h->GetXaxis()->SetTitle("p_{T,D^{0}}(GeV/c)");
+
+    return;
+
+}
+
+void SaveCanvas(TCanvas *c, TString name = "tmp"){
+
+    c->SaveAs(Form("%s.png",name.Data()));
+    c->SaveAs(Form("%s.pdf",name.Data()));
+
+}
+
+
 float ptmin = fptbinsDA[0], ptmax = fptbinsDA[fptbinsDN];
 
-void DjetEfficiency(bool isPrompt = 1, TString effFile = "../outMC/AnalysisResults_fast_D0MCHijing_SMQcorr2.root", TString outDir = "SQMCorrcuts",
-float jetptmin = 2, float jetptmax = 50, bool recoPt = 0, bool postfix = 0, TString listName = "", bool isprefix = 0 )
+void DjetEfficiency(bool isPrompt = 1, 
+TString effFile = "$HOME/Work/ALICE/Analysis/Results/pp13tev/outMC/AnalysisResults_LHC18_MC.root", 
+TString outDir = "$HOME/Work/ALICE/Analysis/Results/pp13tev/efficiencies/LHC18", float jetptmin = 5, float jetptmax = 50, bool recoPt = 0, bool postfix = 0, TString listName = "", bool isprefix = 0 )
+
+//void DjetEfficiency(bool isPrompt = 0, TString effFile = "$HOME/Work/ALICE/Analysis/Results/pp5TeV/D0jet/outMC/AnalysisResults_eff_R04.root", TString outDir = "$HOME/Work/ALICE/Analysis/Results/pp5TeV/D0jet/results/efficiencies/LHC5TeV_R04",
+//float jetptmin = 5, float jetptmax = 50, bool recoPt = 0, bool postfix = 0, TString listName = "", bool isprefix = 0 )
 {
 
- 	gStyle->SetOptStat(0000); //Mean and RMS shown
-	gSystem->Exec(Form("mkdir %s",outDir.Data()));
+ 	//gStyle->SetOptStat(0000); //Mean and RMS shown
+	gSystem->Exec(Form("mkdir -p %s",outDir.Data()));
 
 	// get analysis output file
 	TFile *File = new TFile(effFile,"read");
-	TDirectoryFile* dir=(TDirectoryFile*)File->Get("DmesonsForJetCorrelations");
+	TDirectoryFile* dir = dynamic_cast<TDirectoryFile*>(File->Get("DmesonsForJetCorrelations"));
 
 	TString histName;
 	if(!isprefix){
@@ -72,7 +98,7 @@ float jetptmin = 2, float jetptmax = 50, bool recoPt = 0, bool postfix = 0, TStr
     		else {
       			if(fDmesonSpecie)sparsereco[i]->GetAxis(5)->SetRangeUser(jetptmin,jetptmax); // Dstar tmp
       			else sparsereco[i]->GetAxis(6)->SetRangeUser(jetptmin,jetptmax); // jet pT gen
-  			sparsereco[i]->GetAxis(1)->SetRangeUser(0,100); // jet pT reco
+  			sparsereco[i]->GetAxis(1)->SetRangeUser(0,140); // jet pT reco
     		}
    		if(!fDmesonSpecie) sparsereco[i]->GetAxis(4)->SetRangeUser(-(0.9-fRpar),0.9-fRpar); // reco jet eta
 
@@ -149,23 +175,4 @@ return;
 
 }
 
-void setHistoDetails(TH1 *h, Color_t color, Style_t Mstyle, Size_t size = 0.9, Width_t width=2){
 
-    h->SetMarkerStyle(Mstyle);
-    h->SetMarkerColor(color);
-    h->SetMarkerSize(size);
-    h->SetLineColor(color);
-    h->SetLineWidth(width);
-    h->SetTitle(0);
-    h->GetXaxis()->SetTitle("p_{T,D^{0}}(GeV/c)");
-
-    return;
-
-}
-
-void SaveCanvas(TCanvas *c, TString name = "tmp"){
-
-    c->SaveAs(Form("%s.png",name.Data()));
-    c->SaveAs(Form("%s.pdf",name.Data()));
-
-}

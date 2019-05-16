@@ -26,7 +26,7 @@ TString outSpectraDir = "out_FDPythia",
 TString listName = "",
 bool isDptcut = 1,
 bool fold = 1, TString outHistName = "ptSpectrumSim_",
-bool isSys = 1, bool rebinned = 1,  bool isEff = 1,
+bool isSys = 1, bool rebinned = 1, bool isEff = 1,
 bool oldCounter = 0)
 {
 
@@ -43,7 +43,7 @@ bool oldCounter = 0)
     TDirectoryFile* dir;
     TList *histList;
     double nEv;
-    
+
     if(oldCounter) {
       dir = (TDirectoryFile*)File->Get("DmesonsForJetCorrelations");
       if(fDmesonSpecie) histList = (TList*)dir->Get("histosDStarMBN0");
@@ -61,7 +61,11 @@ bool oldCounter = 0)
 
     double dataLum = nEv/(sigma_in*1000) ;//Luminosity in mbar
     double simScaling;
-    if(fSystem){
+    if(fSystem == 2){
+      if(fDmesonSpecie) simScaling = BRDstar*Taa*nEv;
+      else simScaling = BRDzero*Taa*nEv;
+    }
+    else if(fSystem == 1){
       if(fDmesonSpecie) simScaling = BRDstar*APb*dataLum;
       else simScaling = BRDzero*APb*dataLum;
     }
@@ -175,21 +179,21 @@ void subtractB_afterFolding(TString matrixFile,TH1D *hFD_central_binned,TH1D *hF
     hData_binned_sub->SetMarkerStyle(20);
 
     if(isSys) {
-    TH1D *hData_binned_sub_up = (TH1D*)hData_binned->Clone("hData_binned_sub_up");
-    TH1D *hFD_down_fold;
-    hFD_down_fold = (TH1D*)foldB(matrixFile,hFD_down,hFD_down_fold);
-    hFD_down_fold->SetName("hFD_down_fold");
-    hData_binned_sub_up->Add(hFD_down_fold ,-1);
-    setHistoDetails(hFD_down_fold,4,20,0,2,2);
-    setHistoDetails(hData_binned_sub_up,2,20,0,2,2);
+      TH1D *hData_binned_sub_up = (TH1D*)hData_binned->Clone("hData_binned_sub_up");
+      TH1D *hFD_down_fold;
+      hFD_down_fold = (TH1D*)foldB(matrixFile,hFD_down,hFD_down_fold);
+      hFD_down_fold->SetName("hFD_down_fold");
+      hData_binned_sub_up->Add(hFD_down_fold ,-1);
+      setHistoDetails(hFD_down_fold,4,20,0,2,2);
+      setHistoDetails(hData_binned_sub_up,2,20,0,2,2);
 
-    TH1D *hData_binned_sub_down = (TH1D*)hData_binned->Clone("hData_binned_sub_down");
-    TH1D *hFD_up_fold;
-    hFD_up_fold = (TH1D*)foldB(matrixFile,hFD_up,hFD_up_fold);
-    hFD_up_fold->SetName("hFD_up_fold");
-    hData_binned_sub_down->Add(hFD_up_fold ,-1);
-    setHistoDetails(hFD_up_fold,4,20,0,2,2);
-    setHistoDetails(hData_binned_sub_down,2,20,0,2,2);
+      TH1D *hData_binned_sub_down = (TH1D*)hData_binned->Clone("hData_binned_sub_down");
+      TH1D *hFD_up_fold;
+      hFD_up_fold = (TH1D*)foldB(matrixFile,hFD_up,hFD_up_fold);
+      hFD_up_fold->SetName("hFD_up_fold");
+      hData_binned_sub_down->Add(hFD_up_fold ,-1);
+      setHistoDetails(hFD_up_fold,4,20,0,2,2);
+      setHistoDetails(hData_binned_sub_down,2,20,0,2,2);
     }
 
     //-------------- data to sim ratio - B feed-down fraction

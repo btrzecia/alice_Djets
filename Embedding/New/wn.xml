@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<alien>
+  <collection name="collection">
+    <event name="1">
+      <file name="AliAOD.root" aclId="" broken="0" ctime="2017-01-01 14:47:57" dir="189227937" entryId="189227956" expiretime="" gowner="z2" guid="CFDC2DEA-D028-11E6-9CA3-7FDFEAA5F4A8" guidtime="11E6D028" jobid="800748983" lfn="/alice/sim/2016/LHC16k4/1/246994/AOD/001/AliAOD.root" md5="9d83ab0d6e2d11509c94e4544bf6a290" owner="aliprod" perm="755" replicated="0" size="49420982" turl="alien:///alice/sim/2016/LHC16k4/1/246994/AOD/001/AliAOD.root" type="f" />
+    </event>
+    <event name="2">
+      <file name="AliAOD.root" aclId="" broken="0" ctime="2017-01-01 14:47:28" dir="189227936" entryId="189227944" expiretime="" gowner="z2" guid="C36D5E12-D028-11E6-84DC-DFFD54DC9A67" guidtime="11E6D028" jobid="800748984" lfn="/alice/sim/2016/LHC16k4/1/246994/AOD/002/AliAOD.root" md5="0f68ce63aba48638915e9c0bfb71117c" owner="aliprod" perm="755" replicated="0" size="16784287" turl="alien:///alice/sim/2016/LHC16k4/1/246994/AOD/002/AliAOD.root" type="f" />
+    </event>
+    <info command="[/alice/cern.ch/user/b/btrzecia/]: find -z -x collection -l 2 -o 0 /alice/sim/2016/LHC16k4/1/246994 /AOD/*/AliAOD.root" creator="admin" date="Fri Feb 22 17:27:01 CET 2019" timestamp="1550852821" />
+  </collection>
+</alien>
+
+
