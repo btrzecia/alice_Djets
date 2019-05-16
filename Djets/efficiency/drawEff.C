@@ -13,13 +13,24 @@
 int promptColor = kRed+1;
 int nonpromptColor = kBlue+1;
 
-void drawEff(TString promptFile = "DjetEff_prompt_jetpt2_50", TString nonpromptFile = "DjetEff_nonPrompt_jetpt2_50",
-TString outDir = "plots",
+//void drawEff(TString promptFile = "$HOME/Work/ALICE/Analysis/Results/pp13tev/efficincies/LHC18defghiklmnop/DjetEff_prompt_jetpt5_50.root", TString nonpromptFile = "$HOME/Work/ALICE/Analysis/Results/pp13tev/efficincies/LHC18defghiklmnop/DjetEff_nonPrompt_jetpt5_50.root",
+//TString outDir = "$HOME/Work/ALICE/Analysis/Results/pp13tev/efficincies/LHC18defghiklmnop/plots",
+//double jetptmin = 5, double jetptmax = 50,
+//double plotmin = 2, double plotmax = 36)
+
+void drawEff(
+TString promptFile = "$HOME/Work/ALICE/Analysis/Results/pp13tev/efficiencies/LHC18/DjetEff_prompt_jetpt5_50.root", 
+TString nonpromptFile = "$HOME/Work/ALICE/Analysis/Results/pp13tev/efficiencies/LHC18/DjetEff_nonPrompt_jetpt5_50.root",
+TString outDir = "$HOME/Work/ALICE/Analysis/Results/pp13tev/efficiencies/LHC18/plots",
 double jetptmin = 5, double jetptmax = 50,
 double plotmin = 2, double plotmax = 36)
+
+
 {
 
+	gROOT->ForceStyle();
     gStyle->SetOptStat(000);
+    gSystem->Exec(Form("mkdir -p %s",outDir.Data()));
 
     plotmin = fptbinsDA[0];
 
@@ -29,7 +40,7 @@ double plotmin = 2, double plotmax = 36)
     TH1F *hEffPrompt = (TH1F*)inFilePrompt->Get("hEff_reb");
     TH1F *hEffNonPrompt = (TH1F*)inFileFD->Get("hEff_reb");
 
-    hEffPrompt->SetTitle();
+    hEffPrompt->SetTitle("");
     hEffPrompt->SetMarkerColor(promptColor);
     hEffPrompt->SetLineColor(promptColor);
     hEffPrompt->SetMarkerStyle(20);
@@ -39,6 +50,7 @@ double plotmin = 2, double plotmax = 36)
     hEffPrompt->GetXaxis()->SetLabelSize(0.04);
     hEffPrompt->GetXaxis()->SetTitleSize(0.04);
     hEffPrompt->GetXaxis()->SetTitleOffset(1.);
+    hEffPrompt->GetYaxis()->SetTitleOffset(1.);
     hEffPrompt->GetYaxis()->SetLabelSize(0.045);
     hEffPrompt->GetYaxis()->SetTitleSize(0.05);
     hEffPrompt->GetXaxis()->SetRangeUser(plotmin,plotmax);
@@ -46,7 +58,7 @@ double plotmin = 2, double plotmax = 36)
     //if(fSystem) hEffPrompt->SetMaximum(hEffPrompt->GetMaximum()*1.6);
     //else hEffPrompt->SetMaximum(hEffNonPrompt->GetMaximum()*1.6);
 
-    hEffNonPrompt->SetTitle();
+    hEffNonPrompt->SetTitle("");
     hEffNonPrompt->SetMarkerColor(nonpromptColor);
     hEffNonPrompt->SetLineColor(nonpromptColor);
     hEffNonPrompt->SetMarkerStyle(21);
@@ -56,13 +68,15 @@ double plotmin = 2, double plotmax = 36)
     hEffNonPrompt->GetXaxis()->SetLabelSize(0.04);
     hEffNonPrompt->GetXaxis()->SetTitleSize(0.05);
     hEffNonPrompt->GetXaxis()->SetTitleOffset(1.);
+    hEffNonPrompt->GetYaxis()->SetTitleOffset(1.);
     hEffNonPrompt->GetYaxis()->SetLabelSize(0.045);
     hEffNonPrompt->GetYaxis()->SetTitleSize(0.05);
     hEffNonPrompt->GetXaxis()->SetRangeUser(plotmin,plotmax);
-    hEffNonPrompt->SetMaximum(hEffNonPrompt->GetMaximum()*3);
+    hEffNonPrompt->SetMaximum(hEffNonPrompt->GetMaximum()*1.5);
 
 
     TLegend *leg = new TLegend(0.5,0.22,0.85,0.35);
+    leg->SetBorderSize(0);
     leg->SetTextSize(0.045);
     leg->AddEntry(hEffPrompt,Form("Prompt %s",fDmesonS.Data()),"p");
     leg->AddEntry(hEffNonPrompt,Form("Feed-down %s",fDmesonS.Data()),"p");
@@ -118,10 +132,13 @@ double plotmin = 2, double plotmax = 36)
     pvJetPt->SetTextAlign(11);
     pvJetPt->AddText(Form("%.0f < p_{T.ch jet} < %.0f GeV/#it{c}",jetptmin,jetptmax));
 
-    TCanvas *cEff = new TCanvas("cEff","cEff",800,600);
+    TCanvas *cEff = new TCanvas("cEff","cEff",1400,1000);
     cEff->SetLogy();
-    hEffPrompt->Draw();
-    hEffNonPrompt->Draw("same");
+    //hEffPrompt->Draw();
+    //hEffNonPrompt->Draw("same");
+
+    hEffNonPrompt->Draw();
+    hEffPrompt->Draw("same");
 
         //pvALICE->Draw("same");
         pvEn->Draw("same");
@@ -136,7 +153,8 @@ double plotmin = 2, double plotmax = 36)
         cEff->SaveAs(Form("%s/DjetEff_Sim_log.png",outDir.Data()));
 
 
-    TCanvas *cEff2 = new TCanvas("cEff2","cEff2",800,600);
+
+    TCanvas *cEff2 = new TCanvas("cEff2","cEff2",1400,1000);
     //hEffPrompt->SetMaximum(0.4);
     hEffPrompt->Draw();
     hEffNonPrompt->Draw("same");
