@@ -54,9 +54,9 @@
     TF1* bkgRfit[fptbinsDN];
 
     TH1F* hjetpt[fptbinsDN];
-    TH1F *hjetpt_sb[fptbinsDN];
+    TH1F* hjetpt_sb[fptbinsDN];
     TH1F* hjetptsub[fptbinsDN];
-    TH1F *hjetptcorr[fptbinsDN];
+    TH1F* hjetptcorr[fptbinsDN];
 
     TH1F* hjetptspectrum;
     TH1F* hrawjetptspectrum;

@@ -26,8 +26,9 @@
 
 #include "config.h"
 
-    double jetmin = 0, jetmax = 50;
-    double jetplotmin = 2, jetplotmax = 50;
+    double jetmin = fptbinsJetMeasA[0], jetmax = fptbinsJetMeasA[fptbinsJetMeasN];
+    double jetplotmin = fptbinsJetMeasA[0], jetplotmax = fptbinsJetMeasA[fptbinsJetMeasN];
+
     bool isEta = 0;
     double jetEta = 0.4;
 

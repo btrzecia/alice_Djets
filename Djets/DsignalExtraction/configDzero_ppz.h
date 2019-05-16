@@ -51,46 +51,33 @@ enum DMesonSpecies {kD0toKpi, kDStarD0pi};
     //====== D pT bins ---- set up your D pT bins ======
 //    const int     fptbinsDN = 12;
 //    double        fptbinsDA[fptbinsDN+1] = {1,2,3,4,5,6,7,8,10,12,16,24,36 };
-//----------------3-4 Jet pt
-//    const int     fptbinsDN = 1;
-//    double        fptbinsDA[fptbinsDN+1] = { 3,4};// 3-4 Jetpt
-//----------------4-5 Jet pt
-//    const int     fptbinsDN = 1;
-//    double        fptbinsDA[fptbinsDN+1] = { 4,5};// 3-4 Jetpt
-//----------------3-6 Jet pt
-//    const int     fptbinsDN = 3;
-//    double        fptbinsDA[fptbinsDN+1] = { 3,4,5,6};// 3-6 Jetpt
-//----------------6-10 Jet pt
+//---------//---------//---------//---------//---------//---------
+//---------new sugested binning
+//----------------5-7 Jet pt
+    const int     fptbinsDN = 6;
+    double        fptbinsDA[fptbinsDN+1] = {1,2,3,4,5,6,7};// 5-7 Jetpt
+//----------------7-10 Jet pt
 //    const int     fptbinsDN = 6;
-//    double        fptbinsDA[fptbinsDN+1] = {3,4,5,6,7,8,10};// 6-10 Jetpt
-//    const int     fptbinsDN = 3;
-//    double        fptbinsDA[fptbinsDN+1] = {6,7,8,10};// 6-10 Jetpt
+//    double        fptbinsDA[fptbinsDN+1] = {1,2,3,4,5,6,7,8,10};// 7-10 Jetpt
 //----------------10-16 Jet pt
 //    const int     fptbinsDN = 8;
-//    double        fptbinsDA[fptbinsDN+1] = {3,4,5,6,7,8,10,12,16};// 10-16 Jetpt
-//    const int     fptbinsDN = 5;
-//    double        fptbinsDA[fptbinsDN+1] = {6,7,8,10,12,16};// 10-16 Jetpt
-//    const int     fptbinsDN = 3;
-//    double        fptbinsDA[fptbinsDN+1] = {8,10,12,16};// 10-16 Jetpt
-//    const int     fptbinsDN = 2;
-//    double        fptbinsDA[fptbinsDN+1] = {10,12,16};// 10-16 Jetpt
+//    double        fptbinsDA[fptbinsDN+1] = {1,2,3,4,5,6,7,8,10,12,16};// 10-16 Jetpt
 //----------------16-36 Jet pt
 //    const int     fptbinsDN = 10;
-//    double        fptbinsDA[fptbinsDN+1] = { 3,4,5,6,7,8,10,12,16,24,36};// 16-36 Jetpt// 
+//    double        fptbinsDA[fptbinsDN+1] = {1,2,3,4,5,6,7,8,10,12,16,24,36};// 16-36 Jetpt// 
+//----------------36-50 Jet pt
 //    const int     fptbinsDN = 3;
-//    double        fptbinsDA[fptbinsDN+1] = { 10,12,16,36};// 16-36 Jetpt
-    const int     fptbinsDN = 3;
-    double        fptbinsDA[fptbinsDN+1] = { 12,16,24,36 };// 36-50 Jetpt
+//    double        fptbinsDA[fptbinsDN+1] = {12,16,24,36 };// 36-50 Jetpt
 
     //====== jet pT bins --- set up your jet pT bins ======
 //    const int 	  fptbinsJetN = 3;
 //    double	  fptbinsJetA[fptbinsJetN+1] = {3.0, 16.0, 36.0, 50.0};
+//    const int 	  fptbinsJetN = 5;
+//    double	  fptbinsJetA[fptbinsJetN+1] = {3.0, 6.0, 10.0, 16.0, 36.0, 50.0};
     const int 	  fptbinsJetN = 5;
-    double	  fptbinsJetA[fptbinsJetN+1] = {3.0, 6.0, 10.0, 16.0, 36.0, 50.0};
-//    const int 	  fptbinsJetN = 7;
-//    double	  fptbinsJetA[fptbinsJetN+1] = {3.0,4.0,5.0,6.0, 10.0, 16.0, 36.0, 50.0};
-//    const int 	  fptbinsJetN = 6;
-//    double	  fptbinsJetA[fptbinsJetN+1] = {4.0,5.0,6.0, 10.0, 16.0, 36.0, 50.0};
+    double	  fptbinsJetA[fptbinsJetN+1] = {5.0, 7.0, 10.0, 16.0, 36.0, 50.0};
+//---------new suggested binning end
+//---------//---------//---------//---------//---------//---------
     //====== z bins ---- set up your z (momentum fraction) bins ======
     const int     fptbinsZTrueN = 9;
     double        fptbinsZTrueA[fptbinsZTrueN+1] = { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};

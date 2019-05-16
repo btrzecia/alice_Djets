@@ -89,7 +89,7 @@ void signalExtraction_SB(
 		          else {cout<<postfix<<"----dude! something's wrong, postfix has to be true if prefix is, check again-----"<<endl; return;}
 		}
           sparse = (THnSparseF*)histList->FindObject("hsDphiz");
-          sparse->GetAxis(0)->SetRangeUser(zmin,zmax);
+          //sparse->GetAxis(0)->SetRangeUser(zmin,zmax);
           sparse->GetAxis(1)->SetRangeUser(jetmin,jetmax);
           if(isEta) sparse->GetAxis(5)->SetRangeUser(-jetEta,jetEta);
           if(i==0) hInvMassptD=(TH3D*)sparse->Projection(3,1,2);
@@ -113,7 +113,7 @@ else {          if(postfix) histList =  (TList*)dir->Get(Form("%s%sMBN%d",histNa
 		          else {cout<<postfix<<"----dude! something's wrong,again! postfix has to be true if prefix is, check again-----"<<endl; return;}
 }
               sparse = (THnSparseF*)histList->FindObject("hsDphiz");
-              sparse->GetAxis(0)->SetRangeUser(zmin,zmax);
+              //sparse->GetAxis(0)->SetRangeUser(zmin,zmax);
               sparse->GetAxis(1)->SetRangeUser(jetmin,jetmax);
               if(isEta) sparse->GetAxis(5)->SetRangeUser(-jetEta,jetEta);
               if(j==0 && i==0) hInvMassptD=(TH3D*)sparse->Projection(3,1,2);
