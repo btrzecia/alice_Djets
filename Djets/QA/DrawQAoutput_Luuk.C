@@ -333,6 +333,7 @@ void DrawOutputTrack(TString partname="D0010",TString textleg="",TString path=".
     hd0SPD1->Draw();
     ctrsel->Update();
     TPaveStats *st1=(TPaveStats*)hd0SPD1->GetListOfFunctions()->FindObject("stats");
+    if(!st1) { std::cout << "error" << std::endl; return; }
     st1->SetTextColor(kCyan+3);
     st1->SetY1NDC(0.71);
     st1->SetY2NDC(0.9);

@@ -12,7 +12,6 @@ double dy = 2*jetEta;
 double *sysCutVar, *systuncP;
 double DTrackEff = 0.03;
 double globalUnc = 0.038;
-int fptbinsJetFinalN;
 Double_t *xAxis;
 double plotmin = 5, plotmax=50;
 
@@ -24,9 +23,14 @@ TGraphAsymmErrors *grsystheory, *grsys, *grsysRatio, *grsystheoryratio;
 TH1D *hData_binned, *hData_binned_ratio;
 TH1D *hPrompt_central_binned, *hPrompt_up, *hPrompt_down;
 
+
+TH1* GetUpSys(TH1D **hh, const int nFiles, TH1D *hh_up);
+TH1* GetDownSys(TH1D **hh, const int nFiles, TH1D *hh_down);
+TH1* GetInputHist(TString inFile, TString histName,TH1 *hh);
 void ScaleHist(TH1 *hh, int full = 0);
 void setHistoDetails(TH1 *hh, Color_t color, Style_t Mstyle, int Msize = 1.1, Width_t Lwidth = 2, Style_t Lstyle = 1);
 void SaveCanvas(TCanvas *c, TString name = "tmp");
+void drawFinal(TString outPlotDir);
 
 TH1D *CentralPointsStatisticalUncertainty__4;
 TH1D *GeneratorLevel_JetPtSpectrum__3;
@@ -165,18 +169,18 @@ systuncP[6]=0.199602264197;
     hData_binned->Scale(1,"width");
     hData_binned->Scale(dataScaling);
     hData_binned->Scale(1./dy);
-    hData_binned->SetTitle();
+    hData_binned->SetTitle("");
     //hData_binned->SetMinimum(1);
     hData_binned->SetMaximum(hData_binned->GetMaximum()*2);
     hData_binned->GetYaxis()->SetTitle("d^{2}#sigma/dp_{T}d#it{#eta} (mb)");
 
+    Double_t sysunc[fptbinsJetFinalN];
+    Double_t sysuncAbs[fptbinsJetFinalN];
+    Double_t statunc[fptbinsJetFinalN];
+    Double_t value[fptbinsJetFinalN];
+    Double_t ptval[fptbinsJetFinalN];
+    Double_t ptvalunc[fptbinsJetFinalN];
     if(isSys) {
-      Double_t sysunc[fptbinsJetFinalN];
-      Double_t sysuncAbs[fptbinsJetFinalN];
-      Double_t statunc[fptbinsJetFinalN];
-      Double_t value[fptbinsJetFinalN];
-      Double_t ptval[fptbinsJetFinalN];
-      Double_t ptvalunc[fptbinsJetFinalN];
       for(int j=0; j<fptbinsJetFinalN; j++){
               ptval[j] = (xAxis[j]+xAxis[j+1]) / 2.;
               ptvalunc[j] = (xAxis[j+1]-xAxis[j]) / 2.;
@@ -190,13 +194,13 @@ systuncP[6]=0.199602264197;
       grsys = new TGraphAsymmErrors(fptbinsJetFinalN,ptval,value,ptvalunc,ptvalunc,sysuncAbs,sysuncAbs);
     }
 
+    Double_t sysuncTheory[fptbinsJetFinalN];
+    Double_t ptvaltheory[fptbinsJetFinalN];
+    Double_t ptvalunctheory[fptbinsJetFinalN];
+    Double_t valuetheory[fptbinsJetFinalN];
+    Double_t valuetheoryerrup[fptbinsJetFinalN];
+    Double_t valuetheoryerrdown[fptbinsJetFinalN];
     if(isSim && isSimSys){
-      Double_t sysuncTheory[fptbinsJetFinalN];
-      Double_t ptvaltheory[fptbinsJetFinalN];
-      Double_t ptvalunctheory[fptbinsJetFinalN];
-      Double_t valuetheory[fptbinsJetFinalN];
-      Double_t valuetheoryerrup[fptbinsJetFinalN];
-      Double_t valuetheoryerrdown[fptbinsJetFinalN];
       for(int j=0; j<fptbinsJetFinalN; j++){
               ptvaltheory[j] = (xAxis[j]+xAxis[j+1]) / 2.;
               ptvalunctheory[j] = (xAxis[j+1]-xAxis[j]) / 2.;
@@ -209,12 +213,12 @@ systuncP[6]=0.199602264197;
     }
 
    //======= Ratio to powheg ======
+    TH1D *hPrompt_central_binned_ratio;
+    TH1D *hPrompt_down_ratio;
+    TH1D *hPrompt_up_ratio;
      if(isSim){
-       TH1D *hPrompt_central_binned_ratio;
        hPrompt_central_binned_ratio  = (TH1D*)hPrompt_central_binned->Clone("hPrompt_central_binned_ratio");
        hPrompt_central_binned_ratio->Divide(hPrompt_central_binned);
-       TH1D *hPrompt_down_ratio;
-       TH1D *hPrompt_up_ratio;
        if(isSimSys){
          hPrompt_up_ratio = (TH1D*)hPrompt_up->Clone("hPrompt_up_ratio");
          hPrompt_down_ratio = (TH1D*)hPrompt_down->Clone("hPrompt_down_ratio");
@@ -244,13 +248,14 @@ systuncP[6]=0.199602264197;
        }
        hData_binned_ratio->SetMaximum(2);
 
+       double *sysuncTheoryratio = new double[fptbinsJetFinalN];
+       double *ptvaltheoryratio = new double[fptbinsJetFinalN];
+       double *ptvalunctheoryratio = new double[fptbinsJetFinalN];
+       double *valuetheoryratio = new double[fptbinsJetFinalN];
+       double *valuetheoryerrupratio = new double[fptbinsJetFinalN];
+       double *valuetheoryerrdownratio = new  double[fptbinsJetFinalN];
        if(isSimSys){
-        double *sysuncTheoryratio = new double[fptbinsJetFinalN];
-        double *ptvaltheoryratio = new double[fptbinsJetFinalN];
-        double *ptvalunctheoryratio = new double[fptbinsJetFinalN];
-        double *valuetheoryratio = new double[fptbinsJetFinalN];
-        double *valuetheoryerrupratio = new double[fptbinsJetFinalN];
-        double *valuetheoryerrdownratio = new  double[fptbinsJetFinalN];
+
         for(int j=0; j<fptbinsJetFinalN; j++){
               ptvaltheoryratio[j] = (xAxis[j]+xAxis[j+1]) / 2.;
               ptvalunctheoryratio[j] = (xAxis[j+1]-xAxis[j]) / 2.;
@@ -322,12 +327,12 @@ void getSystematics(TString inDir, TString outPlotDir) {
     "Unfolding: ranges,SVD",
     "Bkg. Fluctuation Matrix",
     "Track. Eff. (D meson)"
-  }
+  };
 
   TCanvas *cUnc = new TCanvas("cUnc","cUnc",1200,800);
   TH1F *hist[nfiles+1];
-  double **sysUnc = new double[fptbinsJetFinalN];
-  for(int i=0; i<fptbinsJetFinalN; i++)  sysUnc[i] = new int[nfiles+1];
+  double **sysUnc = new double*[fptbinsJetFinalN];
+  for(int i=0; i<fptbinsJetFinalN; i++)  sysUnc[i] = new double[nfiles+1];
 
   hist[nfiles] = new TH1F("histUncN","Systematic uncertanties",fptbinsJetFinalN, xAxis);
   hist[0] = new TH1F("histUnc0","Systematic uncertanties",fptbinsJetFinalN, xAxis);
@@ -358,15 +363,15 @@ void getSystematics(TString inDir, TString outPlotDir) {
     hist[i]->SetFillStyle(0);
     if(!i) hist[i]->Draw("hist");
     else hist[i]->Draw("histsame");
-    cout << "systematics: " << desc[i] << endl;
+    std::cout << "systematics: " << desc[i] << std::endl;
     for(int j=0; j<fptbinsJetFinalN; j++){
       double pt = (xAxis[j] + xAxis[j+1])/2.;
       int bin = hist[i]->GetXaxis()->FindBin(pt);
       if(bin) sysUnc[j][i] = hist[i]->GetBinContent(bin)*0.01;
       else sysUnc[j][i] = 0;
-      cout << "pt: " << pt << "\tsys: " << sysUnc[j][i]*100 << endl;
+      std::cout << "pt: " << pt << "\tsys: " << sysUnc[j][i]*100 << std::endl;
     }
-    cout << "=============END" << endl;
+    std::cout << "=============END" << std::endl;
       leg->AddEntry(hist[i],Form("%s",desc[i].Data()),"l");
   }
   leg->AddEntry(hist[nfiles],Form("%s",desc[nfiles].Data()),"l");
@@ -381,7 +386,7 @@ void getSystematics(TString inDir, TString outPlotDir) {
   histUnc->SetLineColor(2);
   histUnc->SetLineWidth(2);
   histUnc->SetLineStyle(2);
-  histUnc->SetTitle();
+  histUnc->SetTitle("");
   histUnc->GetYaxis()->SetTitle("Final systematic uncertanties");
   histUnc->GetXaxis()->SetTitle("p_{T}^{ch,jet} (GeV/c)");
   histUnc->GetXaxis()->SetRangeUser(plotmin,plotmax);
@@ -406,7 +411,7 @@ void getSystematics(TString inDir, TString outPlotDir) {
 }
 
 
-TH1* GetUpSys(TH1D **hh, const int nFiles = 11, TH1D *hh_up){
+TH1* GetUpSys(TH1D **hh, const int nFiles, TH1D *hh_up){
 
         double bin = 0, binerr = 0;
         double max = 0, maxerr = 0;
@@ -425,7 +430,7 @@ TH1* GetUpSys(TH1D **hh, const int nFiles = 11, TH1D *hh_up){
     return hh_up;
 }
 
-TH1* GetDownSys(TH1D **hh, const int nFiles = 11, TH1D *hh_down){
+TH1* GetDownSys(TH1D **hh, const int nFiles, TH1D *hh_down){
         double bin = 0, binerr = 0;
         double max = 0, maxerr = 0;
 
@@ -479,7 +484,7 @@ void setHistoDetails(TH1 *hh, Color_t color, Style_t Mstyle, int Msize, Width_t 
     hh->SetMarkerSize(Msize);
     hh->SetLineStyle(Lstyle);
    // hh->SetName(name.c_str());
-    hh->SetTitle();
+    hh->SetTitle("");
     hh->GetXaxis()->SetTitle("p_{T}^{ch,jet} (GeV/c)");
 }
 
@@ -562,8 +567,9 @@ void drawFinal(TString outPlotDir){
    CentralPointsStatisticalUncertainty__1->Draw("axis");
 
    // dat syst. unc.
+   TGraphAsymmErrors *grae;
 if(isSys){
-   TGraphAsymmErrors *grae = (TGraphAsymmErrors*) grsys->Clone("grae"); // = new TGraphAsymmErrors(6);
+   grae = (TGraphAsymmErrors*) grsys->Clone("grae"); // = new TGraphAsymmErrors(6);
    grae->SetName("CentralPointsSystematicUncertainty_copy");
    grae->SetTitle("Bayes, iter=4, prior=ResponseTruth Systematics");
 
@@ -803,7 +809,7 @@ if(isSim){
    FinalSpectrum->cd();
 
 // ------------>Primitives in pad: FinalSpectrum_2
-   FinalSpectrum_2 = new TPad("FinalSpectrum_2", "FinalSpectrum_2",0,0,1,0.35);
+   TPad *FinalSpectrum_2 = new TPad("FinalSpectrum_2", "FinalSpectrum_2",0,0,1,0.35);
    FinalSpectrum_2->Draw();
    FinalSpectrum_2->cd();
    FinalSpectrum_2->Range(-1.986821e-07,-0.9209589,33.33333,2.49);

@@ -1244,7 +1244,7 @@ void DrawProjections(TString partname="D0",TString h2dname="hMultvsPercentile",I
   cintegral->SaveAs(Form("%s.eps",hint->GetName()));
 }
 
-void DrawEventSelection(TString partname="D0", TString path="./",TString suffixdir="",TString filename="AnalysisResults.root"){
+void DrawEventSelection(TString partname="D0010D0_010_INT7", TString path="./",TString suffixdir="",TString filename="AnalysisResults.root"){
   gStyle->SetCanvasColor(0);
   gStyle->SetTitleFillColor(0);
   gStyle->SetStatColor(0);

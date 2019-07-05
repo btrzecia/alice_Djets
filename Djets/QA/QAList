@@ -1,14 +1,14 @@
 2
 
 
-/home/basia/Work/ALICE/Analysis/Results/PbPb2018/QA/DmesonData/output/AnalysisResults.root
+/home/basia/Work/ALICE/Analysis/Results/PbPb2018/QA/DmesonData/output/AnalysisResults_LHC18r.root
 PWG3_D2H_QAD0_010_INT7
 outputEvSelD0010D0_010_INT7
 nEntriesQAD0010D0_010_INT7
-LHC18q
+LHC18r
 
 
-/home/basia/Work/ALICE/Analysis/Results/PbPb2018/QA/DmesonMC/output/AnalysisResults.root
+/home/basia/Work/ALICE/Analysis/Results/PbPb2018/QA/DmesonMC/output/AnalysisResults_LHC18r.root
 PWG3_D2H_QAD0_010
 outputEvSelD0010D0_010
 nEntriesQAD0010D0_010

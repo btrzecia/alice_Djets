@@ -15,15 +15,28 @@ TH1D *fRawSpectrum;
 TH1D *fTrueSpectrum;
 TH1D *fMeasSpectrum;
 
-TH2D * hMtxPP = NULL;
-TH2D * hMtxDpt = NULL;
-TH2D * hMtxRe = NULL;
-TH2D * hMtxPro = NULL;
+TH2D * hMtxPP = nullptr;
+TH2D * hMtxDpt = nullptr;
+TH2D * hMtxRe = nullptr;
+TH2D * hMtxPro = nullptr;
+TH2D * fMatrixProd = nullptr;
+
+int LoadBackgroundMatrix(TString fn, TString mxname);
+int LoadDetectorMatrix(TString fn, TString mxname, TString tsname, TString msname, bool norm = 1, TString spostfix="");
+void WeightMatrixY(TH2D * Mtx, TH1D * h, bool divide);
+int MtxPlots(TString outDir, TString outName);
+TH2D * Rebin2D(const char* name, TH2D *h, int nx, const double *binx, int ny, const double *biny, bool crop);
+TH2D * NormMatrixY(const char* name, TH2D * Mtx);
+void NormMatrixY(TH2D * Mtx);
+TH2D * ProductMatrix(TH2D * MtxA, TH2D * MtxB);
+int plotSlice(TVirtualPad * p, TH2D * hMtxPP, TH2D * hMtxDpt, TH2D * hMtxRe, TH2D * hMtxPro, const double ptmin, const double ptmax);
+
+
 
 void combineRM (
+TString detRMFile,
 bool isPrompt = 1,
 TString outDir = "combinedMatrix",
-TString detRMFile,
 bool useDeltaPt = 1,
 TString bkgRMFile = "matrix.root",
 bool fDoWeighting = 1,
@@ -31,102 +44,102 @@ bool fdivide = 1 )
 {
 
 
-  gStyle->SetOptStat(0000); //Mean and RMS shown
+    gStyle->SetOptStat(0000); //Mean and RMS shown
 	gStyle->SetPadRightMargin(0.1);
 	gSystem->Exec(Form("mkdir %s",outDir.Data()));
 	gSystem->Exec(Form("mkdir %s/plots",outDir.Data()));
 
 
-if (useDeltaPt) {
-  LoadBackgroundMatrix(bkgRMFile.Data(),"hBkgM");
-  fMatrixDeltaPt->Sumw2();
-	fMatrixDeltaPt->GetXaxis()->SetTitle("p_{T,ch jet}^{rec.} (GeV/#it{c})");
-  fMatrixDeltaPt->GetYaxis()->SetTitle("p_{T,ch jet}^{gen.} (GeV/#it{c})");
-	fMatrixDeltaPt->SetTitle("Bkg.Fluc. Matrix");
-}
+    if (useDeltaPt) {
+      LoadBackgroundMatrix(bkgRMFile.Data(),"hBkgM");
+      fMatrixDeltaPt->Sumw2();
+        fMatrixDeltaPt->GetXaxis()->SetTitle("p_{T,ch jet}^{rec.} (GeV/#it{c})");
+      fMatrixDeltaPt->GetYaxis()->SetTitle("p_{T,ch jet}^{gen.} (GeV/#it{c})");
+        fMatrixDeltaPt->SetTitle("Bkg.Fluc. Matrix");
+    }
 
-LoadDetectorMatrix(detRMFile.Data(),"hPtJet2d","hPtJetGen","hPtJetRec",0);
+    LoadDetectorMatrix(detRMFile.Data(),"hPtJet2d","hPtJetGen","hPtJetRec",0);
 
 
-if (!fTrueSpectrum) { Error("Unfold", "No true spectrum!");	return 0; }
-if (!fMeasSpectrum) { Error("Unfold", "No reconstructed spectrum!"); return 0; }
+    if (!fTrueSpectrum) { Error("Unfold", "No true spectrum!");	return; }
+    if (!fMeasSpectrum) { Error("Unfold", "No reconstructed spectrum!"); return; }
 
 
 	fMatrixPP->GetXaxis()->SetTitle("p_{T,ch jet}^{rec.} (GeV/#it{c})");
-  fMatrixPP->GetYaxis()->SetTitle("p_{T,ch jet}^{gen.} (GeV/#it{c})");
+    fMatrixPP->GetYaxis()->SetTitle("p_{T,ch jet}^{gen.} (GeV/#it{c})");
 	fMatrixPP->SetTitle("Det.Res. Matrix");
 
 	TCanvas *cMatrix = new TCanvas("cMatrix","cMatrix",1200,800);
-  TH1D* priorhisto = (TH1D*) fTrueSpectrum->Clone("priorhisto");
-  TH1D* hNormY;
-	TH2D *fMatrixProd;
+    TH1D* priorhisto = (TH1D*) fTrueSpectrum->Clone("priorhisto");
+    TH1D* hNormY;
+
 	if(useDeltaPt) {
-    TH2D *MatrixComb = ProductMatrix(fMatrixDeltaPt,fMatrixPP);
-    fMatrixProd = (TH2D*)MatrixComb->Clone("fMatrixProd");
-    // weighting the matrix
-    if (fDoWeighting) {
-  				hNormY=(TH1D*)fMatrixProd->ProjectionY("hNormY");
-  				hNormY->Divide(priorhisto);
-  				WeightMatrixY(fMatrixProd,hNormY,fdivide);
-  	}
+        TH2D *MatrixComb = ProductMatrix(fMatrixDeltaPt,fMatrixPP);
+        fMatrixProd = (TH2D*)MatrixComb->Clone("fMatrixProd");
+        // weighting the matrix
+        if (fDoWeighting) {
+                    hNormY=(TH1D*)fMatrixProd->ProjectionY("hNormY");
+                    hNormY->Divide(priorhisto);
+                    WeightMatrixY(fMatrixProd,hNormY,fdivide);
+        }
 
-    cMatrix->Divide(2,1);
-  	cMatrix->cd(1);
-  	gPad->SetLogz();
-  	fMatrixDeltaPt->Draw("colz");
-  	cMatrix->cd(2);
-  	gPad->SetLogz();
-  	fMatrixPP->Draw("colz");
-  }
-  else {
-    fMatrixProd = (TH2D*)fMatrixPP->Clone("fMatrixProd");
-  }
+        cMatrix->Divide(2,1);
+        cMatrix->cd(1);
+        gPad->SetLogz();
+        fMatrixDeltaPt->Draw("colz");
+        cMatrix->cd(2);
+        gPad->SetLogz();
+        fMatrixPP->Draw("colz");
+    }
+    else {
+        fMatrixProd = (TH2D*)fMatrixPP->Clone("fMatrixProd");
+    }
 
-  if (!fMatrixProd) { Error("Unfold", "Error getting product matrix!"); return 0;	}
+    if (!fMatrixProd) { Error("Unfold", "Error getting product matrix!"); return;	}
 
 	fMatrixProd->GetXaxis()->SetTitle("p_{T,ch jet}^{rec.} (GeV/#it{c})");
-  fMatrixProd->GetYaxis()->SetTitle("p_{T,ch jet}^{gen.} (GeV/#it{c})");
+    fMatrixProd->GetYaxis()->SetTitle("p_{T,ch jet}^{gen.} (GeV/#it{c})");
 	fMatrixProd->SetTitle("Combined Matrix");
 
-  if(fSystem) MtxPlots(outDir,"probability");
+      if(fSystem) MtxPlots(outDir,"probability");
 
-  hMtxPro = (TH2D*)fMatrixProd->Clone("hMtxPro");
-  NormMatrixY(hMtxPro);
-  hMtxPro->GetZaxis()->SetRangeUser(0.0001,1);
+      hMtxPro = (TH2D*)fMatrixProd->Clone("hMtxPro");
+      NormMatrixY(hMtxPro);
+      hMtxPro->GetZaxis()->SetRangeUser(0.0001,1);
 
-  TH1D* hProjYeff=(TH1D*)fMatrixProd->ProjectionY("hProjYeff");
-  TH1D* hProjXeff=(TH1D*)fMatrixProd->ProjectionX("hProjXeff");
+      TH1D* hProjYeff=(TH1D*)fMatrixProd->ProjectionY("hProjYeff");
+      TH1D* hProjXeff=(TH1D*)fMatrixProd->ProjectionX("hProjXeff");
 
-  TH2D *Matrix = Rebin2D("Matrix", fMatrixProd, fptbinsJetMeasN, fptbinsJetMeasA, fptbinsJetTrueN, fptbinsJetTrueA,0);
-  Matrix->GetXaxis()->SetTitle("p_{T,ch jet}^{rec.} (GeV/#it{c})");
-  Matrix->GetYaxis()->SetTitle("p_{T,ch jet}^{gen.} (GeV/#it{c})");
-  Matrix->SetTitle("Combined Matrix");
+      TH2D *Matrix = Rebin2D("Matrix", fMatrixProd, fptbinsJetMeasN, fptbinsJetMeasA, fptbinsJetTrueN, fptbinsJetTrueA,0);
+      Matrix->GetXaxis()->SetTitle("p_{T,ch jet}^{rec.} (GeV/#it{c})");
+      Matrix->GetYaxis()->SetTitle("p_{T,ch jet}^{gen.} (GeV/#it{c})");
+      Matrix->SetTitle("Combined Matrix");
 
-  TH2D *MatrixProb = Rebin2D("MatrixProb", fMatrixProd, fptbinsJetMeasN, fptbinsJetMeasA, fptbinsJetTrueN, fptbinsJetTrueA,0);
-  MatrixProb->GetXaxis()->SetTitle("p_{T,ch jet}^{rec.} (GeV/#it{c})");
-  MatrixProb->GetYaxis()->SetTitle("p_{T,ch jet}^{gen.} (GeV/#it{c})");
-  MatrixProb->SetTitle("Combined Prob Matrix");
-  NormMatrixY(MatrixProb);
-  MatrixProb->GetZaxis()->SetRangeUser(0.0001,1);
+      TH2D *MatrixProb = Rebin2D("MatrixProb", fMatrixProd, fptbinsJetMeasN, fptbinsJetMeasA, fptbinsJetTrueN, fptbinsJetTrueA,0);
+      MatrixProb->GetXaxis()->SetTitle("p_{T,ch jet}^{rec.} (GeV/#it{c})");
+      MatrixProb->GetYaxis()->SetTitle("p_{T,ch jet}^{gen.} (GeV/#it{c})");
+      MatrixProb->SetTitle("Combined Prob Matrix");
+      NormMatrixY(MatrixProb);
+      MatrixProb->GetZaxis()->SetRangeUser(0.0001,1);
 
-  hMtxPro->GetXaxis()->SetTitle("p_{T,ch jet}^{rec.} (GeV/#it{c})");
-  hMtxPro->GetYaxis()->SetTitle("p_{T,ch jet}^{gen.} (GeV/#it{c})");
-	hMtxPro->SetTitle("Combined Matrix");
+      hMtxPro->GetXaxis()->SetTitle("p_{T,ch jet}^{rec.} (GeV/#it{c})");
+      hMtxPro->GetYaxis()->SetTitle("p_{T,ch jet}^{gen.} (GeV/#it{c})");
+      hMtxPro->SetTitle("Combined Matrix");
 
 /*  hMtxPP->GetXaxis()->SetTitle("p_{T,ch jet}^{rec.} (GeV/#it{c})");
   hMtxPP->GetYaxis()->SetTitle("p_{T,ch jet}^{gen.} (GeV/#it{c})");
 	hMtxPP->SetTitle("Det.Res. Matrix");*/
 
-  TCanvas *cMatrixProb = new TCanvas("cMatrixProb","cMatrixProb",1200,800);
-	if(useDeltaPt) {
-    cMatrixProb->Divide(2,1);
-  	cMatrixProb->cd(1);
-  	gPad->SetLogz();
-  	hMtxDpt->Draw("colz");
-  	cMatrixProb->cd(2);
-  	gPad->SetLogz();
-  	hMtxPP->Draw("colz");
-  }
+      TCanvas *cMatrixProb = new TCanvas("cMatrixProb","cMatrixProb",1200,800);
+      if(useDeltaPt) {
+            cMatrixProb->Divide(2,1);
+            cMatrixProb->cd(1);
+            gPad->SetLogz();
+            hMtxDpt->Draw("colz");
+            cMatrixProb->cd(2);
+            gPad->SetLogz();
+            hMtxPP->Draw("colz");
+      }
 
 
   TPaveText *pvEn= new TPaveText(0.2,0.80,0.8,0.85,"brNDC");
@@ -188,7 +201,7 @@ if (!fMeasSpectrum) { Error("Unfold", "No reconstructed spectrum!"); return 0; }
   pvEta->Draw("same");
 
   TCanvas *cMatrixProdProb = new TCanvas();
-	cMatrixProdProb->SetLogz();
+    cMatrixProdProb->SetLogz();
 	hMtxPro->Draw("colz");
 
   pv3->Draw("same");
@@ -196,7 +209,6 @@ if (!fMeasSpectrum) { Error("Unfold", "No reconstructed spectrum!"); return 0; }
   pvD->Draw("same");
   pvJet->Draw("same");
   pvEta->Draw("same");
-
 
   TFile *outMatrix;
   if(isPrompt) outMatrix = new TFile(Form("%s/combineMatrix.root",outDir.Data()),"recreate");
@@ -213,9 +225,8 @@ if (!fMeasSpectrum) { Error("Unfold", "No reconstructed spectrum!"); return 0; }
   MatrixProb->GetXaxis()->SetRangeUser(fptbinsJetMeasA[0],fptbinsJetMeasA[fptbinsJetMeasN]+5);
   MatrixProb->GetYaxis()->SetRangeUser(3,fptbinsJetTrueA[fptbinsJetTrueN]);
 
-
-  double shift = 0.41;
-  TPaveText *pvJet = new TPaveText(0.5,0.66-shift,0.9,0.7-shift,"brNDC");
+  shift = 0.41;
+  pvJet = new TPaveText(0.5,0.66-shift,0.9,0.7-shift,"brNDC");
   pvJet->SetFillStyle(0);
   pvJet->SetBorderSize(0);
   pvJet->SetTextFont(42);
@@ -223,7 +234,7 @@ if (!fMeasSpectrum) { Error("Unfold", "No reconstructed spectrum!"); return 0; }
   pvJet->SetTextAlign(11);
   pvJet->AddText(Form("Charged Jets, Anti-#it{k}_{T}, #it{R} = 0.%d",Rpar));
 
-  TPaveText *pvD = new TPaveText(0.5,0.61-shift,0.9,0.65-shift,"brNDC");
+  pvD = new TPaveText(0.5,0.61-shift,0.9,0.65-shift,"brNDC");
   pvD->SetFillStyle(0);
   pvD->SetBorderSize(0);
   pvD->SetTextFont(42);
@@ -238,7 +249,7 @@ if (!fMeasSpectrum) { Error("Unfold", "No reconstructed spectrum!"); return 0; }
     else pvD->AddText("With B #rightarrow D^{0} #rightarrow K^{-}#pi^{+}");
   }
 
-  TPaveText *pv3 = new TPaveText(0.5,0.56-shift,0.9,0.6-shift,"brNDC");
+  pv3 = new TPaveText(0.5,0.56-shift,0.9,0.6-shift,"brNDC");
   pv3->SetFillStyle(0);
   pv3->SetBorderSize(0);
   pv3->SetTextFont(42);
@@ -262,33 +273,32 @@ if (!fMeasSpectrum) { Error("Unfold", "No reconstructed spectrum!"); return 0; }
   pvJet->Draw("same");
   pv3->Draw("same");
 
-		if(isPrompt){
-			if(useDeltaPt) {
-         cMatrix->SaveAs(Form("%s/plots/Matrices.png",outDir.Data()));
-         cMatrixProb->SaveAs(Form("%s/plots/MatricesProb.png",outDir.Data()));
+    if(isPrompt){
+        if(useDeltaPt) {
+             cMatrix->SaveAs(Form("%s/plots/Matrices.png",outDir.Data()));
+             cMatrixProb->SaveAs(Form("%s/plots/MatricesProb.png",outDir.Data()));
        }
-			cMatrixProd->SaveAs(Form("%s/plots/ProdMatrix.png",outDir.Data()));
-      cMatrixProdProb->SaveAs(Form("%s/plots/ProdMatrixProb.png",outDir.Data()));
-			cMatrixProdReb->SaveAs(Form("%s/plots/ProdMatrixRebin.png",outDir.Data()));
-      cMatrixProdProbReb->SaveAs(Form("%s/plots/ProdMatrixPropRebin.png",outDir.Data()));
-		}
-		else {
-			if(useDeltaPt) {
-        cMatrix->SaveAs(Form("%s/plots/MatricesFD.png",outDir.Data()));
-        cMatrixProb->SaveAs(Form("%s/plots/MatricesProbFD.png",outDir.Data()));
-      }
-      cMatrixProd->SaveAs(Form("%s/plots/ProdMatrixFD.png",outDir.Data()));
-      cMatrixProdProb->SaveAs(Form("%s/plots/ProdMatrixProbFD.png",outDir.Data()));
-			cMatrixProdReb->SaveAs(Form("%s/plots/ProdMatrixRebinFD.png",outDir.Data()));
-      cMatrixProdProbReb->SaveAs(Form("%s/plots/ProdMatrixPropRebinFD.png",outDir.Data()));
-		}
+        cMatrixProd->SaveAs(Form("%s/plots/ProdMatrix.png",outDir.Data()));
+        cMatrixProdProb->SaveAs(Form("%s/plots/ProdMatrixProb.png",outDir.Data()));
+        cMatrixProdReb->SaveAs(Form("%s/plots/ProdMatrixRebin.png",outDir.Data()));
+        cMatrixProdProbReb->SaveAs(Form("%s/plots/ProdMatrixPropRebin.png",outDir.Data()));
+    }
+    else {
+        if(useDeltaPt) {
+            cMatrix->SaveAs(Form("%s/plots/MatricesFD.png",outDir.Data()));
+            cMatrixProb->SaveAs(Form("%s/plots/MatricesProbFD.png",outDir.Data()));
+        }
+        cMatrixProd->SaveAs(Form("%s/plots/ProdMatrixFD.png",outDir.Data()));
+        cMatrixProdProb->SaveAs(Form("%s/plots/ProdMatrixProbFD.png",outDir.Data()));
+        cMatrixProdReb->SaveAs(Form("%s/plots/ProdMatrixRebinFD.png",outDir.Data()));
+        cMatrixProdProbReb->SaveAs(Form("%s/plots/ProdMatrixPropRebinFD.png",outDir.Data()));
+    }
 
 	return;
 
 }
 
-
-int LoadDetectorMatrix(TString fn, TString mxname, TString tsname, TString msname, bool norm = 1, TString spostfix="") {
+int LoadDetectorMatrix(TString fn, TString mxname, TString tsname, TString msname, bool norm, TString spostfix) {
 	TFile *f  = TFile::Open(fn);
 	if (!f) { Error("LoadDetectorMatrix","Detector matrix file %s not found.",fn.Data()); return 0; }
 
@@ -312,8 +322,7 @@ int LoadDetectorMatrix(TString fn, TString mxname, TString tsname, TString msnam
 
     }
 
-
-		for(int i=0; i<=fMatrixPP->GetNbinsX()+1;i++){
+    for(int i=0; i<=fMatrixPP->GetNbinsX()+1;i++){
         for(int j=0; j<=fMatrixPP->GetNbinsX()+1;j++){
 
             double cont = fMatrixPP->GetBinContent(i,j);
@@ -323,7 +332,6 @@ int LoadDetectorMatrix(TString fn, TString mxname, TString tsname, TString msnam
 
         }
     }
-
 
     /*
     TH1D *proj[50];
@@ -389,18 +397,16 @@ int LoadBackgroundMatrix(TString fn, TString mxname) {
 		 }
  }
 
-
 	return 1;
 
 
 }
 
-
 /// Plot probability matrices
 int MtxPlots(TString outDir, TString outName) {
 
 	TString tag = "tag";
-	if (!fMatrixPP) { Error("MtxPlots","No unfolding matrix present."); return kErr; }
+    if (!fMatrixPP) { Error("MtxPlots","No unfolding matrix present."); return 0; }
 
 	// Probabilities
 	TCanvas *cMtx=new TCanvas("ProbMtx", "Probability matrices",50,50,800,800);
@@ -424,7 +430,7 @@ int MtxPlots(TString outDir, TString outName) {
 		//if(!fMatrixProd)
 	//	TH2D *fMatrixProd = getResponseMatrix( fMatrixDeltaPt );
 
-		if (!fMatrixProd) { Error("MtxPlots", "Error getting product matrix!"); return kErr; }
+        if (!fMatrixProd) { Error("MtxPlots", "Error getting product matrix!"); return 0; }
 
 		hMtxRe = (TH2D*)NormMatrixY("hMtxRe"+tag,fMatrixProd);
 
@@ -463,10 +469,10 @@ int MtxPlots(TString outDir, TString outName) {
 /// Plot probability matrices
 int plotSlice(TVirtualPad * p, TH2D * hMtxPP, TH2D * hMtxDpt, TH2D * hMtxRe, TH2D * hMtxPro, const double ptmin, const double ptmax) {
 
-	TH1D * hSliceDpt = NULL;
-	TH1D * hSlicePP = NULL;
-	TH1D * hSliceRe = NULL;
-	TH1D * hSlicePro = NULL;
+    TH1D * hSliceDpt = nullptr;
+    TH1D * hSlicePP = nullptr;
+    TH1D * hSliceRe = nullptr;
+    TH1D * hSlicePro = nullptr;
 
 	int imin = hMtxPP->GetYaxis()->FindBin(ptmin+0.0001);
 	int imax = hMtxPP->GetYaxis()->FindBin(ptmax-0.0001);
@@ -538,16 +544,14 @@ int plotSlice(TVirtualPad * p, TH2D * hMtxPP, TH2D * hMtxDpt, TH2D * hMtxRe, TH2
 
 }
 
-
 /// get response matrix. If no background, use just detector matrix, otherwise get product. Normalize if requested.
 TH2D * getResponseMatrix(bool useDeltaPt) {
-	TH2D *mtx;
-	TH2D *mtx2;
-	TH2D *fMatrixPP2;
-	TH2D *fMatrixDeltaPt2;
+
+    TH2D *mtx;
+    TH2D *mtx2, *fMatrixPP2, *fMatrixDeltaPt2;
 
 	if (!useDeltaPt) {
-		if (!fMatrixPP) { Error("getResponseMatrix","No unfolding matrix present."); return 0; }
+        if (!fMatrixPP) { Error("getResponseMatrix","No unfolding matrix present."); return nullptr; }
  		mtx = (TH2D*) fMatrixPP->Clone();
  		//mtx = (TH2D*) fMatrixDeltaPt->Clone();
 		mtx->Sumw2();
@@ -557,7 +561,6 @@ TH2D * getResponseMatrix(bool useDeltaPt) {
 		mtx = ProductMatrix(fMatrixPP, fMatrixDeltaPt);
 
 	}
-
 
     TFile *outFileM = new TFile("outMatrix.root","recreate");
 	outFileM->cd();
@@ -570,22 +573,19 @@ TH2D * getResponseMatrix(bool useDeltaPt) {
 	outFileM->Close();
 	delete outFileM;
 
-
 	return mtx;
 }
-
-
 
 /// get product of two matrices
 TH2D * ProductMatrix(TH2D * MtxA, TH2D * MtxB) {
 	// make sure the matrices exist
 	if (!MtxA) {
-		cerr << "Error in <AliHeavyUnfoldTools::ProductMatrix> : MtxA==0." << endl;
-		return 0;
+        std::cerr << "Error in <AliHeavyUnfoldTools::ProductMatrix> : MtxA==0." << std::endl;
+        return nullptr;
 	}
 	if (!MtxB) {
-		cerr << "Error in <AliHeavyUnfoldTools::ProductMatrix> : MtxB==0." << endl;
-		return 0;
+        std::cerr << "Error in <AliHeavyUnfoldTools::ProductMatrix> : MtxB==0." << std::endl;
+        return nullptr;
 	}
 
 	Int_t binx_a=MtxA->GetNbinsX();
@@ -595,12 +595,12 @@ TH2D * ProductMatrix(TH2D * MtxA, TH2D * MtxB) {
 
 	// make sure the matrices are of the same size
 	if (binx_b!=binx_a) {
-		cerr << "Error in <AliHeavyUnfoldTools::ProductMatrix> : MtxA--MtxB dimension mismatch." << endl;
-		return 0;
+        std::cerr << "Error in <AliHeavyUnfoldTools::ProductMatrix> : MtxA--MtxB dimension mismatch." << std::endl;
+        return nullptr;
 	}
   if (biny_b!=biny_a) {
-		cerr << "Error in <AliHeavyUnfoldTools::ProductMatrix> : MtxA--MtxB dimension mismatch." << endl;
-		return 0;
+        std::cerr << "Error in <AliHeavyUnfoldTools::ProductMatrix> : MtxA--MtxB dimension mismatch." << std::endl;
+        return nullptr;
 	}
 
 	Double_t x_low = MtxA->GetXaxis()->GetBinLowEdge(1);
@@ -626,17 +626,15 @@ TH2D * ProductMatrix(TH2D * MtxA, TH2D * MtxB) {
 	return MtxC;
 }
 
-
-
 /// Weight matrix along y axis by histo values
 void WeightMatrixY(TH2D * Mtx, TH1D * h, bool divide) {
 
 	if (!Mtx) {
-		cerr << "Warning in <AliHeavyUnfoldTools::WeightMatrixY> : Mtx==0." << endl;
+        std::cerr << "Warning in <AliHeavyUnfoldTools::WeightMatrixY> : Mtx==0." << std::endl;
 		return;
 	}
 	if (!h) {
-		cerr << "Warning in <AliHeavyUnfoldTools::WeightMatrixY> : h==0." << endl;
+        std::cerr << "Warning in <AliHeavyUnfoldTools::WeightMatrixY> : h==0." << std::endl;
 		return;
 	}
 
@@ -654,21 +652,19 @@ void WeightMatrixY(TH2D * Mtx, TH1D * h, bool divide) {
 
 }
 
-
-
 /// rebin in 2d variable size - no such routine in Root
 TH2D * Rebin2D(const char* name, TH2D *h, int nx, const double *binx, int ny, const double *biny, bool crop) {
 
 	if (!h) {
-		cerr << "Warning in <AliHeavyUnfoldTools::Rebin2D> : h==0." << endl;
-		return 0;
+        std::cerr << "Warning in <AliHeavyUnfoldTools::Rebin2D> : h==0." << std::endl;
+        return nullptr;
 	}
 
-	TAxis *xaxis = h->GetXaxis();
-  TAxis *yaxis = h->GetYaxis();
+    TAxis *xaxis = h->GetXaxis();
+    TAxis *yaxis = h->GetYaxis();
 
 	TH2D * hre = new TH2D(name,name,nx,binx,ny,biny);
-  hre->Sumw2();
+    hre->Sumw2();
     for (int i=1; i<=xaxis->GetNbins();i++) {
         for (int j=1; j<=yaxis->GetNbins();j++) {
             hre->Fill(xaxis->GetBinCenter(i),yaxis->GetBinCenter(j),h->GetBinContent(i,j));
@@ -710,7 +706,6 @@ TH2D * Rebin2D(const char* name, TH2D *h, int nx, const double *binx, int ny, co
 		}
 	}
 */
-
 	for(int j=0;j<=hre->GetNbinsY()+1;j++){
 		hre->SetBinContent(0,j,0);
 		hre->SetBinError(0,j,0);
@@ -718,11 +713,8 @@ TH2D * Rebin2D(const char* name, TH2D *h, int nx, const double *binx, int ny, co
 		hre->SetBinError(hre->GetNbinsX()+1,j,0);
 	}
 
-
 	return hre;
 }
-
-
 
 /// Prior for unfolding: try different prior functions wich best describe the raw specrum.
 /// these shapes are from Gyulnara
@@ -730,14 +722,13 @@ TF1 * getPriorFunction(int prior, TH1D * spect, int priorType = 0) {
 
 	if (!spect) {
 		Error("getPriorFunction","Required spectrum does not exist.");
-		return 0;
+        return nullptr;
 	}
-
 
 	double fitlo = 3; // fFitPtMin;
 	double fithi = 50; // fFitPtMax;
 
-	TF1 *PriorFunction = 0;
+    TF1 *PriorFunction = nullptr;
 
 	TString fitopt = "NR";
 	//if (fLHfit) fitopt += "L";
@@ -758,7 +749,6 @@ TF1 * getPriorFunction(int prior, TH1D * spect, int priorType = 0) {
    // PriorFunction->SetParameters(10,20);
     //spect->Fit(PriorFunction, fitopt,"",fitlo,fithi);
 
-
 	PriorFunction->SetTitle("Chosen prior function");
 	return PriorFunction;
 }
@@ -766,8 +756,8 @@ TF1 * getPriorFunction(int prior, TH1D * spect, int priorType = 0) {
 /// Create a new, y-normalized matrix
 TH2D * NormMatrixY(const char* name, TH2D * Mtx) {
 	if (!Mtx) {
-		cerr << "Warning in <AliHeavyUnfoldTools::NormMatrixY> : Mtx==0." << endl;
-		return 0;
+        std::cerr << "Warning in <AliHeavyUnfoldTools::NormMatrixY> : Mtx==0." << std::endl;
+        return nullptr;
 	}
 
 	TH2D * Mre = (TH2D*)Mtx->Clone(name);
@@ -776,18 +766,16 @@ TH2D * NormMatrixY(const char* name, TH2D * Mtx) {
 	return Mre;
 }
 
-
 /// Normalize matrix along y axis projection
 void NormMatrixY(TH2D * Mtx) {
 	if (!Mtx) {
-		cerr << "Warning in <AliHeavyUnfoldTools::NormMatrixY> : Mtx==0." << endl;
+        std::cerr << "Warning in <AliHeavyUnfoldTools::NormMatrixY> : Mtx==0." << std::endl;
 		return;
 	}
 
 	TH1D * h = Mtx->ProjectionY();
 	WeightMatrixY(Mtx, h, true);
 }
-
 
 /// get pearson coeffs from covariance matrix
 TH2D * getPearsonCoeffs(const TMatrixD &covMatrix) {

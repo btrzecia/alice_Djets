@@ -125,7 +125,7 @@ void runQAMC(){
                  if(h==0)cprojPt[y]->OCreate(year[y]+"_"+list2D[i]+"_pt",3,1);
              }
 
-                Double_t weight = weights[id];
+                Double_t weight = 1; //weights[id];
 
              if(h==0 || h==5)mc.second->OSetProp(mc.second->OGetHisto1(list2DName[h]+list2D[i]+"_px_"+ptint[0]+"_"+ptint[1]), scale, 0, weight);
              else if(h==list2DHistN-2 || h==list2DHistN-1)mc.second->OSetProp(mc.second->OGetHisto1(list2DName[h]+list2D[i]+"_py_"+etaint[0]+"_"+etaint[1]), scale, 0, weight);
