@@ -30,6 +30,9 @@
 static Bool_t isRefSys=0;
 static Double_t refScale = 1.5;
 
+Bool_t SetReflection(AliHFInvMassFitter* &fitter, Float_t fLeftFitRange, Float_t fRightFitRange, Float_t &RS, Int_t iBin);
+Bool_t SetReflection(AliHFInvMassFitter* &fitter, Float_t fLeftFitRange, Float_t fRightFitRange, Float_t &RS, Int_t ptmin, Int_t ptmax);
+
 void signalExtraction_SB(
   TString data = "$HOME/Work/alice/analysis/out/AnalysisResults.root",
   Bool_t isEff = 0,
@@ -88,7 +91,7 @@ void signalExtraction_SB(
 		          else histList =  (TList*)dir->Get(Form("%s%d",histName.Data(),i));
 		}
 		else{    if(postfix){ histList =  (TList*)dir->Get(Form("%s%sMBN%d",histName.Data(),listName.Data(),i));}
-		          else {cout<<postfix<<" something's wrong, postfix has to be true if prefix is, check again-----"<<endl; return;}
+                  else {std::cout<<postfix<<" something's wrong, postfix has to be true if prefix is, check again-----"<<std::endl; return;}
 		}
           sparse = (THnSparseF*)histList->FindObject("hsDphiz");
           //sparse->GetAxis(0)->SetRangeUser(zmin,zmax);
@@ -112,7 +115,7 @@ if(!isprefix){          if(postfix) histList =  (TList*)dir->Get(Form("%s%d%s",h
           else histList =  (TList*)dir->Get(Form("%s%d",histName.Data(),i));
 }
 else {          if(postfix) histList =  (TList*)dir->Get(Form("%s%sMBN%d",histName.Data(),listName.Data(),i));
-		          else {cout<<postfix<<" something's wrong,again! postfix has to be true if prefix is, check again-----"<<endl; return;}
+                  else {std::cout<<postfix<<" something's wrong,again! postfix has to be true if prefix is, check again-----"<<std::endl; return;}
 }
               sparse = (THnSparseF*)histList->FindObject("hsDphiz");
               //sparse->GetAxis(0)->SetRangeUser(zmin,zmax);

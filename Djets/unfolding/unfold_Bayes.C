@@ -8,6 +8,14 @@
 
 #include "config.h"
 
+#include "RooUnfold.h"
+#include "RooUnfoldBayes.h"
+#include "RooUnfoldSvd.h"
+#include "RooUnfoldResponse.h"
+#include "RooUnfoldTUnfold.h"
+#include "RooUnfoldErrors.h"
+#include "RooUnfoldInvert.h"
+
 //====================== global =========================
 TH2D* fMatrixPP;
 TH2D* fMatrixProd;
@@ -174,7 +182,7 @@ LoadDetectorMatrix(detRMfile.Data(),"hPtJet2d","hPtJetGen","hPtJetRec",0);
 
     TCanvas* cUnfolded = new TCanvas("cUnfolded","cUnfolded",800,600);
     cUnfolded->SetLogy();
-    TLegend* leg =  new TLegend(0.6,0.4,0.85,0.85);
+    TLegend* leg =  new TLegend(0.6,0.40,0.85,0.85);
     leg->SetBorderSize(0);
 
 //------------ do unfolding NTrials times ------------
@@ -714,7 +722,7 @@ TH2D * ProductMatrix(TH2D * MtxA, TH2D * MtxB) {
 int MtxPlots(TString outDir, TString outName) {
 
 	TString tag = "tag";
-	if (!fMatrixPP) { Error("MtxPlots","No unfolding matrix present."); return kErr; }
+    if (!fMatrixPP) { Error("MtxPlots","No unfolding matrix present."); return 1; }
 
     TH2D * hMtxPP = nullptr;
     TH2D * hMtxDpt = nullptr;
@@ -743,7 +751,7 @@ int MtxPlots(TString outDir, TString outName) {
 		//if(!fMatrixProd)
 		//	fMatrixProd = getResponseMatrix( fMatrixDeltaPt );
 
-		if (!fMatrixProd) { Error("MtxPlots", "Error getting product matrix!"); return kErr; }
+        if (!fMatrixProd) { Error("MtxPlots", "Error getting product matrix!"); return 1; }
 
 		//hMtxRe = (TH2D*)NormMatrixY("hMtxRe"+tag,fMatrixProd);
 
