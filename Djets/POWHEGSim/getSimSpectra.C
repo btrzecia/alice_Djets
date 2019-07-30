@@ -6,8 +6,10 @@
 //
 // Macro to extract jet pt spectra from simulation, prompt or non-prompt D
 //
-
 #include "config.h"
+
+TH1* GetInputSimHistD(TString inFile, bool isjetptcut);
+TH1* GetInputSimHistJet(TString inFile, bool isEff, TString effFilePrompt, TString effFileNonPrompt,bool isDptcut, int isNPrompt, int SimNr);
 
 //fDmesonSpecie = 1;
 //fRpar = 0.4;
@@ -17,7 +19,11 @@ double jetptmin = 5, jetptmax = 30; // for D pT spectra
 double jetEta = 0.9-fRpar;
 int BFDsim;
 
+double GetEfficiency(TH1 *hh, double Dpt);
+void setHistoDetails(TH1 *hh, Color_t color, Style_t Mstyle, Width_t width, TString name);
+void SaveCanvas(TCanvas *c, TString name = "tmp");
 
+enum fHType {fHistDPt=1, fHistJetPt=2, fHistZ=3};
 
 //quark: 1 = beauty, 0 = charm
 void getSimSpectra(
@@ -26,18 +32,7 @@ int simNr = 0, int quark = 1, bool jet = 1,  bool isDptcut = 1, bool isEff = 0,
 TString effFilePrompt = "$HOME/file.root",
 TString effFileNonPrompt = "$HOME/file.root",
 TString outFileDir = "outR03Test/",
-bool isjetptcut = 0, double jetmin = 5, double jetmax = 30 );
-
-double GetEfficiency(TH1 *hh, double Dpt);
-void setHistoDetails(TH1 *hh, Color_t color, Style_t Mstyle, Width_t width, string name);
-void SaveCanvas(TCanvas *c, string name = "tmp");
-
-//quark: 1 = beauty, 0 = charm
-void getSimSpectra(TString simFile, int simNr,
-  int quark, bool jet, bool isDptcut,
-  bool isEff, TString effFilePrompt, TString effFileNonPrompt,
-  TString outFileDir,
-  bool isjetptcut, double jetmin, double jetmax )
+bool isjetptcut = 0, double jetmin = 5, double jetmax = 30 )
 {
 
     gSystem->Exec(Form("mkdir -p %s",outFileDir.Data()));
@@ -49,23 +44,15 @@ void getSimSpectra(TString simFile, int simNr,
     simFile += "/";
     if(quark == 1) simFile += fRunB[simNr];
     else if(quark == 0) simFile += fRunC[simNr];
-  /*  if(quark == 1) simFile += "beauty";
-    else simFile += "charm";
-    simFile += "_";
-    if(quark == 1) simFile += fRunB[simNr];
-    else if(quark == 0) simFile += fRunC[simNr];*/
     simFile += ".root";
 
-    TH1D *hPt;
-    if(jet) hPt = (TH1D*) GetInputSimHistJet(simFile.Data(),hPt, isEff, effFilePrompt.Data(), effFileNonPrompt.Data(),isDptcut,quark,simNr);
-    else hPt = (TH1D*) GetInputSimHistD(simFile.Data(),hPt,isjetptcut);
+    TH1D *hist;
+    if(jet) hist = (TH1D*) GetInputSimHistJet(simFile.Data(), isEff, effFilePrompt.Data(), effFileNonPrompt.Data(),isDptcut,quark,simNr);
+    else hist = (TH1D*) GetInputSimHistD(simFile.Data(),isjetptcut);
 
     TString out = outFileDir;
     if(jet) out += "/JetPt_";
     else out += "/DPt_";
-  //  if(quark == 1) out += "beauty";
-  //  else out += "charm";
-  //  out += "_";
     if(quark == 1) out += fRunB[simNr];
     else if(quark == 0) out += fRunC[simNr];
 
@@ -82,32 +69,94 @@ void getSimSpectra(TString simFile, int simNr,
     out += ".root";
 
     TFile *ofile = new TFile( out.Data() ,"RECREATE");
-    hPt->Write();
+    hist->Write();
     ofile->Close();
 
     return;
 }
 
-TH1* GetInputHist(TString inFile, string histName,TH1 *hh){
+TH1* GetInputSimHist(TString inFile, bool isjetptcut){
+
+    TH1 *hist;
+
+    TFile *fileInput = new TFile(inFile,"read");
+    if(!fileInput){
+      std::cout << "File " << fileInput << " cannot be opened! check your file path!" << std::endl; return nullptr;
+    }
+
+    TList* dir=(TList*)fileInput->Get("AliAnalysisTaskDmesonJets_histos");
+    if(!dir){
+      std::cout << "Error in getting dir! Exiting..." << std::endl;
+      return nullptr;
+    }
+
+    TH1D *hxsection = (TH1D*)dir->FindObject("fHistXsectionVsPtHard");
+    if(!hxsection){
+      std::cout << "Error in getting x-section hist! Exiting..." << std::endl;
+      return nullptr;
+    }
+    double xsection = hxsection->GetMean(2);
+    double events = (double)hxsection->GetEntries();
+    double scaling = xsection/events;
+
+    TTree *tree;
+    if(!fDmesonSpecie) tree = (TTree*)fileInput->Get("AliAnalysisTaskDmesonJets_D0_MCTruth");
+    else tree = (TTree*)fileInput->Get("AliAnalysisTaskDmesonJets_DStar_MCTruth");
+    AliAnalysisTaskDmesonJets::AliDmesonInfoSummary *brD = nullptr;
+    AliAnalysisTaskDmesonJets::AliJetInfoSummary *brJet = nullptr;
+    tree->SetBranchAddress("DmesonJet",&brD);
+    tree->SetBranchAddress(Form("Jet_AKTChargedR0%d0_pt_scheme",Rpar),&brJet);
+
+    if(!tree || !brD || !brJet) {
+      std::cout << "Error in setting the tree/branch names! Exiting..." << std::endl;
+      return nullptr;
+    }
+
+    hist = new TH1D("hist","hDpt",100,0,100);
+    // hist = new TH1D("hist","hDpt",20,-2,2);
+    for (int k=0; k<tree->GetEntries(); k++) {
+    tree->GetEntry(k);
+    //if(isjetptcut) { if (brJet->fEta < -jetEta || brJet->fEta > jetEta) continue; }
+    //if (brJet->fEta < -jetEta || brJet->fEta > jetEta) continue;
+    if(isjetptcut) { if (brJet->fPt < jetptmin || brJet->fPt >= jetptmax) continue; }
+    if (brD->fEta < -1 || brD->fEta > 1) continue;
+      hist->Fill(brD->fPt);
+      //hist->Fill(brD->fEta);
+    }
+
+    hist->Scale(scaling);
+
+    if(!hist) {
+      std::cout << "Error in extracting the mass plot! Exiting..." << std::endl;
+      return nullptr;
+    }
+
+    return hist;
+}
+
+
+TH1* GetInputHist(TString inFile, TString histName,TH1 *hh){
 
     TFile *jetPtFile = new TFile(inFile,"read");
-    hh = (TH1F*)jetPtFile->Get(histName.c_str());
+    hh = (TH1F*)jetPtFile->Get(histName.Data());
 
     //hh = (TH1F*)hh_tmp->Rebin(ptbinsJetN,"hh",ptbinsJet);
     return hh;
 }
 
-TH1* GetInputSimHistJet(TString inFile, TH1 *hPt, bool isEff, TString effFilePrompt, TString effFileNonPrompt,bool isDptcut, int isNPrompt, int SimNr){
+TH1* GetInputSimHistJet(TString inFile, bool isEff, TString effFilePrompt, TString effFileNonPrompt,bool isDptcut, int isNPrompt, int SimNr){
+
+    TH1D *hist = new TH1D("hist","hjetpt",100,0,100);
 
     TFile *fileInput = new TFile(inFile,"read");
     if(!fileInput){
-      std::cout << "File " << fileInput << " cannot be opened! check your file path!" << std::endl; return kFALSE;
+      std::cout << "File " << fileInput << " cannot be opened! check your file path!" << std::endl; return nullptr;
     }
 
     TList* dir=(TList*)fileInput->Get("AliAnalysisTaskDmesonJets_histos");
     if(!dir) {
       std::cout << "Error in getting dir! Exiting..." << std::endl;
-      return kFALSE;
+      return nullptr;
     }
 
     TH1D *hxsection;
@@ -120,7 +169,7 @@ TH1* GetInputSimHistJet(TString inFile, TH1 *hPt, bool isEff, TString effFilePro
  
     if(!hxsection) {
       std::cout << "Error in getting x-section hist! Exiting..." << std::endl;
-      return kFALSE;
+      return nullptr;
     }
     double xsection = hxsection->GetMean(2);
     double events = (double)hxsection->GetEntries();
@@ -129,20 +178,20 @@ TH1* GetInputSimHistJet(TString inFile, TH1 *hPt, bool isEff, TString effFilePro
     TTree *tree;
     if(!fDmesonSpecie) tree = (TTree*)fileInput->Get("AliAnalysisTaskDmesonJets_D0_MCTruth");
     else tree = (TTree*)fileInput->Get("AliAnalysisTaskDmesonJets_DStar_MCTruth");
-    AliAnalysisTaskDmesonJets::AliDmesonMCInfoSummary *brD = 0;
+    AliAnalysisTaskDmesonJets::AliDmesonMCInfoSummary *brD = nullptr;
 
-    AliAnalysisTaskDmesonJets::AliJetInfoSummary *brJet = 0;
+    AliAnalysisTaskDmesonJets::AliJetInfoSummary *brJet = nullptr;
     tree->SetBranchAddress("DmesonJet",&brD);
     tree->SetBranchAddress(Form("Jet_AKTChargedR0%d0_pt_scheme",Rpar),&brJet);
 
     if(!tree || !brD || !brJet) {
       std::cout << "Error in setting the tree/branch names! Exiting..." << std::endl;
-      return NULL;
+      return nullptr;
     }
 
-    TH1D *hPromptEff = NULL;
+    TH1D *hPromptEff = nullptr;
     if(isEff) hPromptEff = (TH1D*)GetInputHist(effFilePrompt,"hEff_reb",hPromptEff);
-    TH1D *hNonPromptEff = NULL;
+    TH1D *hNonPromptEff = nullptr;
     if(isEff) hNonPromptEff = (TH1D*)GetInputHist(effFileNonPrompt,"hEff_reb",hNonPromptEff);
 
 
@@ -152,134 +201,134 @@ TH1* GetInputSimHistJet(TString inFile, TH1 *hPt, bool isEff, TString effFilePro
         hjetpt[j]->Sumw2();
     }
     double effC, effB, eff;
-    hPt = new TH1D("hPt","hjetpt",100,0,100);
+
 
     for (int k=0; k<tree->GetEntries(); k++) {
-    tree->GetEntry(k);
-    if (brJet->fEta < -jetEta || brJet->fEta > jetEta) continue;
+        tree->GetEntry(k);
+        if (brJet->fEta < -jetEta || brJet->fEta > jetEta) continue;
 
 
-    if(BFDsim){
-      if(brD->fPartonType != 5) continue;
+        if(BFDsim){
+          if(brD->fPartonType != 5) continue;
+        }
+        else if(brD->fPartonType != 4) continue;
+        if(brD->fAncestorPDG == 2212) continue; // check if not coming from proton
+
+        if(isDptcut){
+          for (int j=0; j<fptbinsDN; j++) {
+            if (brD->fPt < fptbinsDA[j] || brD->fPt >= fptbinsDA[j+1]) continue;
+            hjetpt[j]->Fill(brJet->fPt);
+          }//end of D-meson pT bin loop
+        }
+        else hist->Fill(brJet->fPt);
     }
-    else if(brD->fPartonType != 4) continue;
-    if(brD->fAncestorPDG == 2212) continue; // check if not coming from proton
 
     if(isDptcut){
-      for (int j=0; j<fptbinsDN; j++) {
-        if (brD->fPt < fptbinsDA[j] || brD->fPt >= fptbinsDA[j+1]) continue;
-        hjetpt[j]->Fill(brJet->fPt);
-      }//end of D-meson pT bin loop
-    }
-    else hPt->Fill(brJet->fPt);
+      for (int j=0; j<fptbinsDN; j++){
+        double pt = (fptbinsDA[j]+fptbinsDA[j+1])/2.;
+        if(isEff)  {
+            effC = GetEfficiency(hPromptEff,pt);
+            effB = GetEfficiency(hNonPromptEff,pt);
+            eff = effB / effC;
+        }
+        else eff = 1;
+        if (!j){
+            hist = (TH1D*)hjetpt[j]->Clone("hist");
+            hist->Scale(eff);
+        }
+        else hist->Add(hjetpt[j],eff);
+      }
     }
 
-if(isDptcut){
-  for (int j=0; j<fptbinsDN; j++){
-    double pt = (fptbinsDA[j]+fptbinsDA[j+1])/2.;
-    if(isEff)  {
-        effC = GetEfficiency(hPromptEff,pt);
-        effB = GetEfficiency(hNonPromptEff,pt);
-        eff = effB / effC;
-    }
-    else eff = 1;
-    if (!j){
-        hPt = (TH1D*)hjetpt[j]->Clone("hPt");
-        hPt->Scale(eff);
-    }
-    else hPt->Add(hjetpt[j],eff);
-  }
-}
+hist->Scale(scaling);
 
-hPt->Scale(scaling);
-
- if(!hPt) {
+ if(!hist) {
    std::cout << "Error in extracting the mass plot! Exiting..." << std::endl;
-   return kFALSE;
+   return nullptr;
  }
 
-return hPt;
+return hist;
 
 }
 
 
-TH1* GetInputSimHistD(TString inFile, TH1 *hPt, bool isjetptcut){
+TH1* GetInputSimHistD(TString inFile, bool isjetptcut){
+
+    TH1D *hist = new TH1D("hist","hDpt",100,0,100);
 
     TFile *fileInput = new TFile(inFile,"read");
     if(!fileInput){
-      std::cout << "File " << fileInput << " cannot be opened! check your file path!" << std::endl; return kFALSE;
+      std::cout << "File " << fileInput << " cannot be opened! check your file path!" << std::endl; return nullptr;
     }
 
     TList* dir=(TList*)fileInput->Get("AliAnalysisTaskDmesonJets_histos");
     if(!dir){
       std::cout << "Error in getting dir! Exiting..." << std::endl;
-      return NULL;
+      return nullptr;
     }
 
     TH1D *hxsection = (TH1D*)dir->FindObject("fHistXsectionVsPtHard");
     if(!hxsection){
       std::cout << "Error in getting x-section hist! Exiting..." << std::endl;
-      return NULL;
+      return nullptr;
     }
     double xsection = hxsection->GetMean(2);
     double events = (double)hxsection->GetEntries();
     double scaling = xsection/events;
 
 
-
     TTree *tree;
     if(!fDmesonSpecie) tree = (TTree*)fileInput->Get("AliAnalysisTaskDmesonJets_D0_MCTruth");
     else tree = (TTree*)fileInput->Get("AliAnalysisTaskDmesonJets_DStar_MCTruth");
-    AliAnalysisTaskDmesonJets::AliDmesonInfoSummary *brD = 0;
+    AliAnalysisTaskDmesonJets::AliDmesonInfoSummary *brD = nullptr;
 
-    AliAnalysisTaskDmesonJets::AliJetInfoSummary *brJet = 0;
+    AliAnalysisTaskDmesonJets::AliJetInfoSummary *brJet = nullptr;
     tree->SetBranchAddress("DmesonJet",&brD);
 
     tree->SetBranchAddress(Form("Jet_AKTChargedR0%d0_pt_scheme",Rpar),&brJet);
 
     if(!tree || !brD || !brJet) {
       std::cout << "Error in setting the tree/branch names! Exiting..." << std::endl;
-      return NULL;
+      return nullptr;
     }
 
-    hPt = new TH1D("hPt","hDpt",100,0,100);
-    // hPt = new TH1D("hPt","hDpt",20,-2,2);
+
     for (int k=0; k<tree->GetEntries(); k++) {
     tree->GetEntry(k);
     //if(isjetptcut) { if (brJet->fEta < -jetEta || brJet->fEta > jetEta) continue; }
     //if (brJet->fEta < -jetEta || brJet->fEta > jetEta) continue;
     if(isjetptcut) { if (brJet->fPt < jetptmin || brJet->fPt >= jetptmax) continue; }
     if (brD->fEta < -1 || brD->fEta > 1) continue;
-      hPt->Fill(brD->fPt);
-      //hPt->Fill(brD->fEta);
+      hist->Fill(brD->fPt);
+      //hist->Fill(brD->fEta);
     }
 
-    hPt->Scale(scaling);
+    hist->Scale(scaling);
 
-    if(!hPt) {
+    if(!hist) {
       std::cout << "Error in extracting the mass plot! Exiting..." << std::endl;
-      return NULL;
+      return nullptr;
     }
 
-    return hPt;
+    return hist;
 }
 
 double GetEfficiency(TH1 *hh, double Dpt){
     return hh->GetBinContent(hh->GetXaxis()->FindBin(Dpt));
 }
 
-void setHistoDetails(TH1 *hh, Color_t color, Style_t Mstyle, Width_t width, string name){
+void setHistoDetails(TH1 *hh, Color_t color, Style_t Mstyle, Width_t width, TString name){
     hh->SetMarkerColor(color);
     hh->SetMarkerStyle(Mstyle);;
     hh->SetLineColor(color);
     hh->SetLineWidth(2);
     hh->SetMarkerSize(1.1);
-    hh->SetName(name.c_str());
-    hh->SetTitle();
+    hh->SetName(name.Data());
+    hh->SetTitle("");
     hh->GetXaxis()->SetTitle("p_{T}^{ch,jet} (GeV/c)");
 }
 
-void SaveCanvas(TCanvas *c, string name){
-    c->SaveAs(Form("%s.png",name.c_str()));
-    c->SaveAs(Form("%s.pdf",name.c_str()));
+void SaveCanvas(TCanvas *c, TString name){
+    c->SaveAs(Form("%s.png",name.Data()));
+    c->SaveAs(Form("%s.pdf",name.Data()));
 }
